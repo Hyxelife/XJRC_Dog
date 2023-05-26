@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="XJDog" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/XJDog" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add option="-lpthread" />
+					<Add library="lib/libunitreeMotorSDK_Linux64.so" />
+					<Add directory="lib" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/XJDog" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Linker>
+			<Add option="-lpthread" />
+			<Add library="lib/libunitreeMotorSDK_Linux64.so" />
+			<Add directory="lib" />
+		</Linker>
+		<Unit filename="Controller.cpp" />
+		<Unit filename="Controller.h" />
+		<Unit filename="Gait.cpp" />
+		<Unit filename="Gait.h" />
+		<Unit filename="Kinematics.cpp" />
+		<Unit filename="Kinematics.h" />
+		<Unit filename="LegController.cpp" />
+		<Unit filename="LegController.h" />
+		<Unit filename="LegMotors.cpp" />
+		<Unit filename="LegMotors.h" />
+		<Unit filename="MultiThread.h" />
+		<Unit filename="PacePlanner.cpp" />
+		<Unit filename="PacePlanner.h" />
+		<Unit filename="Sensor.cpp" />
+		<Unit filename="Sensor.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="motor/CRC32.h" />
+		<Unit filename="motor/IOPort.h" />
+		<Unit filename="motor/SerialPort.h" />
+		<Unit filename="motor/errorClass.h" />
+		<Unit filename="motor/motor_control.cpp" />
+		<Unit filename="motor/motor_control.h" />
+		<Unit filename="motor/motor_msg.h" />
+		<Unit filename="motor/unitreeMotor.cpp" />
+		<Unit filename="motor/unitreeMotor.h" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>

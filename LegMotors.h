@@ -1,0 +1,35 @@
+#pragma once
+#include "motor/SerialPort.h"
+#include "motor/motor_control.h"
+#include "Kinematics.h"
+
+class LegMotors
+{
+public:
+    static void SetMotorScalar(float motorScalar) { ms_motorScalar = motorScalar; }
+    static float GetMotorScalar() { return ms_motorScalar; }
+    static void MotorInitCheck();
+public:
+    LegMotors(AxisMovement zeroPos,std::vector<float> motorSign,float motorScalar,std::string portName);
+
+    void PositionCtrl(float shoulderAngle,float armAngle,float armFeetInterAngle);
+    void TorqueCtrl(float shoulderTorque,float armTorque,float armFeetInterTorque);
+    //void BlendCtrl(AxisMovement angle,AxisTorque torque);
+    AxisMovement GetCurrentMotorAngle();
+
+protected:
+    void _initCheck();
+
+    void _checkPos(float shoulderPos,float armPos,float feetPos);
+    void _checkRange(float shoudlerAngle,float armAngle,float feetAngle);
+protected:
+    static std::vector<LegMotors*> ms_registerMotor;
+    AxisMovement m_zeros;
+    SerialPort m_serial;
+    AxisMovement m_currentAngle;
+    AxisTorque m_currentTorque;
+    static float ms_motorScalar;
+    std::vector<float> m_motorSign;
+    static bool ms_systemSafe;
+    std::string m_name;
+};

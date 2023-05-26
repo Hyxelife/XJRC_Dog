@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="test3" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="bin/Debug/test3" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-g" />
+				</Compiler>
+				<Linker>
+					<Add library="/home/lrx/my_work/test3/lib/libunitreeMotorSDK_Linux64.so" />
+					<Add directory="/home/lrx/my_work/test3/lib/libunitreeMotorSDK_Linux64.so" />
+				</Linker>
+			</Target>
+			<Target title="Release">
+				<Option output="bin/Release/test3" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="1" />
+				<Option compiler="gcc" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+		</Build>
+		<Compiler>
+			<Add option="-Wall" />
+			<Add option="-fexceptions" />
+		</Compiler>
+		<Linker>
+			<Add library="/home/lrx/my_work/test3/lib/libunitreeMotorSDK_Linux64.so" />
+			<Add directory="/home/lrx/my_work/test3/lib" />
+		</Linker>
+		<Unit filename="CRC32.h" />
+		<Unit filename="IOPort.h" />
+		<Unit filename="SerialPort.h" />
+		<Unit filename="all.h" />
+		<Unit filename="check.cpp" />
+		<Unit filename="check.h" />
+		<Unit filename="control1.cpp" />
+		<Unit filename="control1.h" />
+		<Unit filename="cycloid.cpp" />
+		<Unit filename="cycloid.h" />
+		<Unit filename="errorClass.h" />
+		<Unit filename="imu.cpp" />
+		<Unit filename="imu.h" />
+		<Unit filename="inversekinematics.cpp" />
+		<Unit filename="inversekinematics.h" />
+		<Unit filename="main.cpp" />
+		<Unit filename="motor_msg.h" />
+		<Unit filename="paramMotor.h" />
+		<Unit filename="paramMotorprint.cpp" />
+		<Unit filename="route.cpp" />
+		<Unit filename="route.h" />
+		<Unit filename="standingup.cpp" />
+		<Unit filename="standingup.h" />
+		<Unit filename="unitreeMotor.cpp" />
+		<Unit filename="unitreeMotor.h" />
+		<Unit filename="vmc.cpp" />
+		<Unit filename="vmc.h" />
+		<Extensions />
+	</Project>
+</CodeBlocks_project_file>

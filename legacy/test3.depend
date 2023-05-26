@@ -1,0 +1,132 @@
+# depslib dependency file v1.0
+1679118168 source:/home/lrx/my_work/test3/main.cpp
+	<iostream>
+	"all.h"
+
+1679109406 source:/home/lrx/my_work/test3/check.cpp
+	"check.h"
+	"math.h"
+	"stdio.h"
+	"unitreeMotor.h"
+	"motor_msg.h"
+	"SerialPort.h"
+
+1679109395 /home/lrx/my_work/test3/check.h
+
+1679108858 /home/lrx/my_work/test3/unitreeMotor.h
+	"motor_msg.h"
+	"CRC32.h"
+	<stdint.h>
+	<iostream>
+
+1679108534 /home/lrx/my_work/test3/motor_msg.h
+	<stdint.h>
+
+1679108534 /home/lrx/my_work/test3/CRC32.h
+	<stdint.h>
+
+1679108871 /home/lrx/my_work/test3/SerialPort.h
+	<termios.h>
+	<sys/select.h>
+	<sstream>
+	<string.h>
+	<stdint.h>
+	<fcntl.h>
+	<sys/ioctl.h>
+	<linux/serial.h>
+	<unistd.h>
+	<iostream>
+	"errorClass.h"
+	"unitreeMotor.h"
+	"IOPort.h"
+
+1679108534 /home/lrx/my_work/test3/errorClass.h
+	<string>
+	<exception>
+	<stdexcept>
+	<sstream>
+	<cstring>
+
+1679108876 /home/lrx/my_work/test3/IOPort.h
+	<stdint.h>
+	<unistd.h>
+	<vector>
+	"unitreeMotor.h"
+
+1679109643 source:/home/lrx/my_work/test3/control1.cpp
+	"control1.h"
+	"all.h"
+
+1679109542 /home/lrx/my_work/test3/control1.h
+	"unitreeMotor.h"
+	"motor_msg.h"
+	"SerialPort.h"
+	"all.h"
+
+1679214112 /home/lrx/my_work/test3/all.h
+	"SerialPort.h"
+	"control1.h"
+	"paramMotor.h"
+	"cycloid.h"
+	"standingup.h"
+	"check.h"
+	"CRC32.h"
+	"inversekinematics.h"
+	"IOPort.h"
+	"unitreeMotor.h"
+	"motor_msg.h"
+	"math.h"
+	<pthread.h>
+	<stdio.h>
+	<stdlib.h>
+	<string.h>
+	"stdint.h"
+	"stddef.h"
+	<unistd.h>
+	"vmc.h"
+	"imu.h"
+	"route.h"
+
+1679109246 /home/lrx/my_work/test3/paramMotor.h
+	"SerialPort.h"
+	"unitreeMotor.h"
+
+1679109246 /home/lrx/my_work/test3/inversekinematics.h
+
+1679109246 source:/home/lrx/my_work/test3/inversekinematics.cpp
+	"math.h"
+	"stdio.h"
+	"inversekinematics.h"
+
+1679109246 source:/home/lrx/my_work/test3/paramMotorprint.cpp
+	"paramMotor.h"
+	"unitreeMotor.h"
+
+1679108098 source:/home/lrx/my_work/test3/unitreeMotor.cpp
+
+1679118071 source:/home/lrx/my_work/test3/standingup.cpp
+	"stdio.h"
+	"all.h"
+
+1679117950 /home/lrx/my_work/test3/cycloid.h
+
+1679117958 source:/home/lrx/my_work/test3/cycloid.cpp
+	"all.h"
+
+1679117678 /home/lrx/my_work/test3/standingup.h
+
+1679214112 /home/lrx/my_work/test3/vmc.h
+
+1679214112 /home/lrx/my_work/test3/imu.h
+
+1679214937 /home/lrx/my_work/test3/route.h
+
+1679214143 source:/home/lrx/my_work/test3/imu.cpp
+	"all.h"
+
+1679214623 source:/home/lrx/my_work/test3/route.cpp
+	"all.h"
+
+1679214287 source:/home/lrx/my_work/test3/vmc.cpp
+	"all.h"
+
