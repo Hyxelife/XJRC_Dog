@@ -1,6 +1,6 @@
 #include <iostream>
 #include <stdio.h>
-#include <termios.h>
+
 #include "Controller.h"
 using namespace std;
 
@@ -14,86 +14,11 @@ bool run = false;
 
 
 
-int getch_(void)
-{
-     struct termios tm, tm_old;
-     int fd = 0, ch;
 
-     if (tcgetattr(fd, &tm) < 0) {//保存现在的终端设置
-          return -1;
-     }
-
-     tm_old = tm;
-     cfmakeraw(&tm);//更改终端设置为原始模式，该模式下所有的输入数据以字节为单位被处理
-     if (tcsetattr(fd, TCSANOW, &tm) < 0) {//设置上更改之后的设置
-          return -1;
-     }
-
-     ch = getchar();
-     if (tcsetattr(fd, TCSANOW, &tm_old) < 0) {//更改设置为最初的样子
-          return -1;
-     }
-
-     return ch;
-}
 
 void * console(void * arg)
 {
-    char cmd;
-    while(!sysQuit)
-    {
-        if(arrowCtrl)
-        {
-            cmd = getch_();
-            switch(cmd)
-            {
-                case 'q':ctrl_r = 1;run = true;break;
-                case 'e':ctrl_r = -1;run = true;break;
-                case 'w':ctrl_y = 1;run = true;break;
-                case 'a':ctrl_x = -1;run = true;break;
-                case 's':ctrl_y = -1;run = true;break;
-                case 'd':ctrl_x = 1;run = true;break;
-                case 'p':arrowCtrl = false;printf("[console]:mannual control quit\n");break;
-            }
-        }else if(autoCtrl)
-        {
-            cmd = getchar();
-            switch(cmd)
-            {
-                case 'Q':
-                case 'q':autoCtrl = false;break;
-            }
-        }else
-        {
-            scanf("%c",&cmd);
-            switch(cmd)
-            {
-                case 'H':
-                case 'h':
-                {
-                    printf("**********************************\n");
-                    printf("*           help page            *\n");
-                    printf("**********************************\n");
-                    printf("[h/H] help page\n");
-                    printf("[m/M] mannually control\n");
-                    printf("[x/X] automatically control\n");
-                    printf("[b/B] quit sustem\n");
-                    printf("when system is mannually controlling:\n");
-                    printf("\t[w/a/s/d] moving control\n");
-                    printf("\t[q/e] rotating control\n");
-                    printf("\t[p] quit control\n");
-                    printf("when system is automatically controlling:\n");
-                    printf("\t[q] quit\n");
-                }break;
-                case 'm':
-                case 'M':autoCtrl = false;arrowCtrl = true;printf("[console]:entering mannual control.\n");break;
-                case 'x':
-                case 'X':autoCtrl = true;arrowCtrl = false;break;
-                case 'B':
-                case 'b':sysQuit = true;break;
-            }
-        }
-    }
+
 }
 
 #define DECAY(num,decay)    if(num>0)\
