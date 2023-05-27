@@ -1,38 +1,17 @@
 #include <iostream>
 #include <stdio.h>
-
+#include "Console.h"
 #include "Controller.h"
 using namespace std;
 
 #define DEG(deg)    (deg)/180.0f*3.141592653589f
 
-bool sysQuit = false;
-bool arrowCtrl = false;
-bool autoCtrl = false;
-float ctrl_x,ctrl_y,ctrl_r;
-bool run = false;
-
-
-
-
-
-void * console(void * arg)
-{
-
-}
-
-#define DECAY(num,decay)    if(num>0)\
-                            {num-=decay;if(num < 0)num=0;}\
-                            else\
-                            {num += decay;if(num>0)num = 0;}
-
-
 int main()
 {
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
-    THREAD prop = thread_create(console,NULL,prop);
-
+    Console con(1,1,1e-3);
+    con.Start();
 
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
@@ -72,64 +51,25 @@ int main()
     controller.Update(0,0,0);
     cout<<"[main]:start loop"<<endl;
 
-    bool continue_ = false;
-
-    clock_t lastTime = clock(),curTime = 0;
-    float decay_ = 0;
-    const float ctrlDecay = 0.5;
-    const float zeroThres = 0.05;
-
-    float set_x = ctrl_x,set_y = ctrl_y,set_r = ctrl_r;
-    float upd_x = set_x,upd_y =set_y,upd_r = set_r;
+    float x,y,r;
+    bool sysQuit = false;
     while(!sysQuit)
     {
-    //controller.Update(0,1,0);
-
-        if(continue_)
+        con.Update(false);
+        if(con.IsDogStop())continue;
+        if(con.IsAutoControl())
         {
-
-            if(controller.Update(upd_x,upd_y,upd_r))
-            {
-
-                if(upd_x != 0 || upd_y != 0 || upd_r != 0)printf("[main]:%.2f,%.2f,%.2f\n",upd_x,upd_y,upd_r);
-                upd_x = set_x;
-                upd_y = set_y;
-                upd_r = set_r;
-
-                if(upd_x == 0 && upd_y == 0 && upd_r == 0){continue_ = false;run = false;}
-
-                if(fabsf(upd_x) < zeroThres)upd_x = 0;
-                if(fabsf(upd_y) < zeroThres)upd_y = 0;
-                if(fabsf(upd_r) < zeroThres)upd_r = 0;
-            }
+            //todo:add auto ctrl
         }else
         {
-            continue_ = run;
-            //printf("[main]:idlding...\n");
+            con.UpdateMannualParams(x,y,r);
+            if(controller.Update(x,y,r))
+                con.Update(true);
         }
-        if(ctrl_x != 0 || ctrl_y != 0 || ctrl_r != 0)
-        {
-        set_x = ctrl_x;
-        ctrl_x = 0;
-        set_y = ctrl_y;
-        ctrl_y = 0;
-        set_r = ctrl_r;
-        ctrl_r = 0;
-        }
-        //printf("[main]:controll:%.1f,%.1f,%.1f\n",set_x,set_y,set_r);
-        curTime = clock();
-        decay_ = curTime-lastTime;
-        lastTime = curTime;
-        decay_ /= (float)CLOCKS_PER_SEC;
-        decay_ *= ctrlDecay;
-        DECAY(set_x,decay_);
-        DECAY(set_y,decay_);
-        DECAY(set_r,decay_);
-        //cout<<endl;
-        //usleep(100000);
-
-
+        sysQuit = con.IsRequestExit();
     }
     controller.Exit();
+    con.Exit();
+    printf("[main]:system quit!\n");
     return 0;
 }

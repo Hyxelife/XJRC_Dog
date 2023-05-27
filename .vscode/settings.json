@@ -1,6 +1,7 @@
 {
     "files.associations": {
         "ratio": "cpp",
-        "alignedvector3": "cpp"
+        "alignedvector3": "cpp",
+        "*.tcc": "cpp"
     }
 }
