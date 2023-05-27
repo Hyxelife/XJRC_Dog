@@ -1,4 +1,6 @@
 #include "Console.h"
+#include <stdio.h>
+#include <math.h>
 
 
 int Console::getch_(void)
@@ -24,11 +26,23 @@ int Console::getch_(void)
      return ch;
 }
 
+void Console::outstatus()
+{
+    printf("n_mannual:%d,mannual:%d\nn_auto:%d,auto:%d\nn_stop:%d,stop:%d\nn_quit:%d,quit:%d\nctrl[%.3f,%.3f,%.3f]\nout[%.3f%.3f%.3f]\nerr_his[%.3f,%.3f,%.3f]\n\
+    inc[%.3f,%.3f,%.3f]"
+    ,m_need_mannual,m_mannual,m_need_auto,m_auto,m_need_stop,m_stop,m_need_quit,m_quit,m_ctrl_x,m_ctrl_y,m_ctrl_r,m_out_x,m_out_y,m_out_r,
+    m_his_x,m_his_y,m_his_r,m_inc_x,m_inc_y,m_inc_r);
+}
+
 void* Console::consoleFunc(void* arg)
 {
     Console* pThis = (Console*)arg;
-    pThis->_console();
+    printf("[Console]:start up!\n");
+    pThis->console_();
 }
+
+#define CTRL_TIME   0.5f
+
 void Console::console_()
 {
     char cmd;
@@ -37,17 +51,21 @@ void Console::console_()
         if(m_mannual)
         {
             cmd = getch_();
+            printf("get:%c\n",cmd);
+            outstatus();
             if(m_need_mannual == 0 || m_need_stop == 1)continue;
             mutex_lock(m_mutexDesc);
+
             switch(cmd)
             {
-                case 'q':m_ctrl_r = 1;m_need_stop = 0;break;
-                case 'e':m_ctrl_r = -1;m_need_stop = 0;break;
-                case 'w':m_ctrl_y = 1;m_need_stop = 0;break;
-                case 'a':m_ctrl_x = -1;m_need_stop = 0;break;
-                case 's':m_ctrl_y = -1;m_need_stop = 0;break;
-                case 'd':m_ctrl_x = 1;m_need_stop = 0;break;
+                case 'q':m_ctrl_r = 1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
+                case 'e':m_ctrl_r = -1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
+                case 'w':m_ctrl_y = 1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
+                case 'a':m_ctrl_x = -1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
+                case 's':m_ctrl_y = -1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
+                case 'd':m_ctrl_x = 1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
                 case 'f':m_need_stop = 1;break;
+                case 'x':outstatus();break;
                 case 'p':m_need_mannual = 0;m_ctrl_x = m_ctrl_y = m_ctrl_r = 0;break;
             }
             mutex_unlock(m_mutexDesc);
@@ -87,18 +105,19 @@ void Console::console_()
                 case 'M':m_need_mannual = 1;m_need_stop = 0;break;
                 case 'a':
                 case 'A':m_need_auto = 1;break;
-                case 'X':
-                case 'x':m_need_quit = 1;break;
+                case 'q':
+                case 'Q':m_need_quit = 1;break;
                 case 'b':
                 case 'B':m_quit = true;m_stop = true;break;
             }
         }
+        while(!m_quit && (m_need_mannual != -1 || m_need_auto != -1 || m_need_quit != -1));
     }
     printf("[Console]:system quit!\n");
 }
 
-Console::Console(float kp,float ki,float zerosThres)
-:m_kp(kp),m_ki(ki)
+Console::Console(float kp,float kw,float zerosThres)
+:m_kp(kp),m_kw(kw)
 {
     m_lastUpdateTime = -1;
     m_auto = false;
@@ -110,18 +129,20 @@ Console::Console(float kp,float ki,float zerosThres)
 
     m_threadQuit = true;
     m_zeroThres = zerosThres;
-    m_ctrl_x = m_ctrl_y = m_ctrl_r = 
-    m_out_x = m_out_y = m_out_r = 
-    m_his_r = m_his_x  =m_his_y = 
+    m_ctrl_x = m_ctrl_y = m_ctrl_r =
+    m_out_x = m_out_y = m_out_r =
+    m_his_r = m_his_x  =m_his_y =
+    m_inc_x = m_inc_y = m_inc_r =
     m_out_r = m_out_x = m_out_y = 0;
     mutex_create(m_mutexDesc);
 }
 
 void Console::Start()
 {
-    if(m_threadQuit)return;
+    if(!m_threadQuit)return;
     m_threadQuit = false;
     thread_create(Console::consoleFunc,this,m_threadDesc);
+
 }
 
 void Console::Exit()
@@ -133,7 +154,7 @@ void Console::Exit()
 
 Console::~Console()
 {
-    mutex_destroy(&m_mutexDesc);
+    mutex_destroy(m_mutexDesc);
 }
 
 void Console::UpdateMannualParams(float& x,float& y,float& r)
@@ -147,26 +168,22 @@ void Console::UpdateMannualParams(float& x,float& y,float& r)
     dt /= (float)CLOCKS_PER_SEC;
     mutex_lock(m_mutexDesc);
     float err_x = m_ctrl_x - m_out_x,err_y = m_ctrl_y-m_out_y,err_r = m_ctrl_r-m_out_r;
-    m_ctrl_x = 0;m_ctrl_y = 0;m_ctrl_r = 0;
+    if(m_ctrlTime <= 0)
+    {m_ctrl_x = 0;m_ctrl_y = 0;m_ctrl_r = 0;m_ctrlTime = 0;}
+    m_ctrlTime-=dt;
     mutex_unlock(m_mutexDesc);
-    float inc_x = m_kp*(err_x-m_his_x)+dt*m_ki*(err_x),
-          inc_y = m_kp*(err_y-m_his_y)+dt*m_ki*(err_y),
-          inc_r = m_kp*(err_x-m_his_r)+dt*m_ki*(err_r);
 
+    m_inc_x += m_kp*err_x*dt+m_kw*(err_x-m_his_x);
+    m_inc_y += m_kp*err_y*dt+m_kw*(err_y-m_his_y);
+    m_inc_r += m_kp*err_r*dt+m_kw*(err_r-m_his_r);
 
-    m_out_x += inc_x;
-    m_out_y += inc_y;
-    m_out_r += inc_r;
+    m_out_x += m_inc_x*dt;
+    //printf("%.3f\n",dt*1000);
+    m_out_y += m_inc_y*dt;
+    m_out_r += m_inc_r*dt;
     m_his_x = err_x;
     m_his_y = err_y;
     m_his_r = err_r;
-
-    if(fabsf(m_out_x) <= m_zeroThres)
-        m_out_x = 0;
-    if(fabsf(m_out_y) <= m_zeroThres)
-        m_out_y = 0;
-    if(fabsf(m_out_r) <= m_zeroThres)
-        m_out_r = 0;
 
     x = m_out_x;
     y = m_out_y;
@@ -181,7 +198,7 @@ void Console::Update(bool stepOver)
         if(m_need_stop == 0)
         {
             m_stop = false;
-            printf("[Console]:stopping!\n");
+            printf("[Console]:moving...\n");
         }
         m_need_stop = -1;
 
@@ -206,7 +223,7 @@ void Console::Update(bool stepOver)
 
     }else if(stepOver)
     {
-        if(m_out_r == 0 && m_out_x == 0&& m_out_y == 0)
+        if(fabsf(m_out_x) <= m_zeroThres && fabsf(m_out_y) <= m_zeroThres&& fabsf(m_out_r) <= m_zeroThres)
         {
             if(m_need_mannual == 0)
             {
@@ -236,5 +253,5 @@ void Console::Update(bool stepOver)
             }
         }
     }
-    
+
 }

@@ -42,6 +42,8 @@
 			<Add library="lib/libunitreeMotorSDK_Linux64.so" />
 			<Add directory="lib" />
 		</Linker>
+		<Unit filename="Console.cpp" />
+		<Unit filename="Console.h" />
 		<Unit filename="Controller.cpp" />
 		<Unit filename="Controller.h" />
 		<Unit filename="Gait.cpp" />

@@ -85,7 +85,7 @@ float centerY = -5;
     //cout<<"totalTime:"<<m_totalTime<<endl;
     if(m_totalTime >= m_gait.GetTotalDuration())
     {
-        cout<<"1s"<<endl;
+       // cout<<"1s"<<endl;
         loopOver = true;
         m_totalTime -= m_gait.GetTotalDuration();
     }

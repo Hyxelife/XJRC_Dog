@@ -87,6 +87,10 @@ void Controller::ClearControlHistory()
 	m_planner.Reset();
 }
 
+void Controller::ClearTime()
+{
+    m_time = -1;
+}
 #define CLAMP(num,low,up)	{if(num > up)num = up;\
 							else if(num < low)num = low;}
 
@@ -94,7 +98,8 @@ bool Controller::Update(float velX, float velY, float velYaw)
 {
 	CLAMP(velX,-1,1);
 	CLAMP(velY,-1,1);
-	CLAMP(velR,-1,1);
+	CLAMP(velYaw,-1,1);
+	//printf("ctrl:[%.3f,%.3f,%.3f]\n",velX,velY,velYaw);
 
     if(m_time == -1)
         m_time = clock();

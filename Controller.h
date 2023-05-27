@@ -16,6 +16,7 @@ public:
     void Exit();
     void RawControl(std::vector<FeetMovement> moves);
     void ClearControlHistory();
+    void ClearTime();
     PacePlanner& GetPacePlanner();
 
 protected:

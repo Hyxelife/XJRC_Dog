@@ -10,16 +10,17 @@ int main()
 {
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
-    Console con(1,1,1e-3);
+    Console con(0.5,5,1e-2);
     con.Start();
+
 
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-         AxisMovement(4.60809,3.0603,4.72927),
-        AxisMovement(5.37086,4.23993,0.693744),
-        AxisMovement(1.0109,3.30344,1.13822),
-        AxisMovement(2.29829,0.757788,0.122719),
+         AxisMovement(3.8411,3.13738,4.77453),
+        AxisMovement(4.77261,4.14214,0.573327),
+        AxisMovement(1.99303,3.10824,1.07877),
+        AxisMovement(2.54756,0.799973,0.440254) ,
 
         },
         {
@@ -56,19 +57,23 @@ int main()
     while(!sysQuit)
     {
         con.Update(false);
-        if(con.IsDogStop())continue;
+        sysQuit = con.IsRequestExit();
+        if(con.IsDogStop()){controller.ClearTime();continue;}
         if(con.IsAutoControl())
         {
             //todo:add auto ctrl
         }else
         {
             con.UpdateMannualParams(x,y,r);
+            //cout<<"[main]"<<x<<","<<y<<","<<","<<endl;
             if(controller.Update(x,y,r))
                 con.Update(true);
         }
-        sysQuit = con.IsRequestExit();
+
     }
+    printf("[main]:system quitting...\n");
     controller.Exit();
+    printf("[main]Controller quit! Press any key to stop console...\n");
     con.Exit();
     printf("[main]:system quit!\n");
     return 0;
