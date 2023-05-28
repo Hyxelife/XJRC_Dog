@@ -111,7 +111,7 @@ void Console::console_()
                 case 'B':m_quit = true;m_stop = true;break;
             }
         }
-        while(!m_quit && (m_need_mannual != -1 || m_need_auto != -1 || m_need_quit != -1));
+        while(!m_quit && (m_need_mannual != -1 || m_need_auto != -1 || m_need_quit != -1)){printf("blocking...\n");outstatus();}
     }
     printf("[Console]:system quit!\n");
 }
@@ -208,10 +208,13 @@ void Console::Update(bool stepOver)
             printf("[Console]:quitting...\n");
             m_need_quit = -1;
         }
-        if(m_need_mannual == 1)
+        if(m_need_mannual != -1)
         {
-            m_mannual = true;
-            printf("[Console]:enter mannual mode!\n");
+            m_mannual = m_need_mannual;
+            if(m_mannual)
+                printf("[Console]:enter mannual mode!\n");
+            else
+                printf("[Console]:exit mannual mode!\n");
             m_need_mannual = -1;
         }
         if(m_need_auto == 1)

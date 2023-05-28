@@ -11,16 +11,16 @@ int main()
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     Console con(0.5,5,1e-2);
-    con.Start();
+
 
 
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-         AxisMovement(3.8411,3.13738,4.77453),
-        AxisMovement(4.77261,4.14214,0.573327),
-        AxisMovement(1.99303,3.10824,1.07877),
-        AxisMovement(2.54756,0.799973,0.440254) ,
+         AxisMovement(4.91949,3.08408,4.74078),
+        AxisMovement(5.24776,4.15786,0.671885),
+        AxisMovement(1.21645,3.32031,1.11789),
+        AxisMovement(1.90483,0.584065,0.265763) ,
 
         },
         {
@@ -40,7 +40,7 @@ int main()
     );
     cout<<"[main]:system ready!"<<endl;
     PacePlanner& planner = controller.GetPacePlanner();
-    planner.SetCurveHeight(5.0);
+    planner.SetCurveHeight(9.0);
     planner.SetDogHeight(30.0f);
     planner.SetDogOffsetX(9.41f);
     planner.SetGait(Gait::Pace(0.6f,0.08f),0);
@@ -51,7 +51,7 @@ int main()
     cout<<"[main]:finish start up procedure!"<<endl;
     controller.Update(0,0,0);
     cout<<"[main]:start loop"<<endl;
-
+    con.Start();
     float x,y,r;
     bool sysQuit = false;
     while(!sysQuit)

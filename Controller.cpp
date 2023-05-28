@@ -16,7 +16,7 @@ Controller::Controller(
 	std::vector<AxisMovement> realAngle,
 	std::vector<std::vector<float>> motorSign,
 	LegController::VMCParam param)
-	:m_planner(9,9,0.1,41,15),
+	:m_planner(9,9,0.3,41,15+9.41f+9.41f),
 	m_pos(4,FeetMovement(0,0,0)),
 	m_touchStatus(4,true)
 {
