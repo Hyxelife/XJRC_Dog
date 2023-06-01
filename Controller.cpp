@@ -18,9 +18,9 @@ Controller::Controller(
 	LegController::VMCParam param)
 	:m_planner(9,9,0.3,41,15+9.41f+9.41f),
 	m_pos(4,FeetMovement(0,0,0)),
-	hopTimeouchStatus(4,true)
+	m_touchStatus(4,true)
 {
-hopTimeime = -1;
+m_time = -1;
 	AxisMovement angle;
 	float scalar = LegMotors::GetMotorScalar();
 	for (int i = 0; i < 4; ++i)
@@ -67,7 +67,6 @@ void Controller::Start(float startUpTime)
             while (!m_pControllers[i]->Ready());
 		}
 	}
-	hopTimeime = -1;
 }
 
 void Controller::Exit()
@@ -83,13 +82,13 @@ void Controller::Exit()
 
 void Controller::ClearControlHistory()
 {
-	hopTimeime = -1;
+	m_time = -1;
 	m_planner.Reset();
 }
 
 void Controller::ClearTime()
 {
-    hopTimeime = -1;
+    m_time = -1;
 }
 
 #define CLAMP(num,low,up)	{if(num > up)num = up;\
@@ -102,15 +101,15 @@ bool Controller::Update(float velX, float velY, float velYaw)
 	CLAMP(velYaw,-1,1);
 	//printf("ctrl:[%.3f,%.3f,%.3f]\n",velX,velY,velYaw);
 
-    if(hopTimeime == -1)
-        hopTimeime = clock();
+    if(m_time == -1)
+        m_time = clock();
 	clock_t time = clock();
-	float dt = (float)(time - hopTimeime)/CLOCKS_PER_SEC;
-	hopTimeime = time;
+	float dt = (float)(time - m_time)/CLOCKS_PER_SEC;
+	m_time = time;
 	m_planner.SetVelocity(velY, velX, velYaw);
 	LegController::CtrlParam param;
 
-	bool status = m_planner.Update(dt, m_pos, hopTimeouchStatus);
+	bool status = m_planner.Update(dt, m_pos, m_touchStatus);
 	if (m_bVMCCtrl)
 	{
 		for (int i = 0; i < 4; ++i)
@@ -122,7 +121,7 @@ bool Controller::Update(float velX, float velY, float velYaw)
 			param.feetSpeedX = 0;
 			param.feetSpeedY = 0;
 			param.feetSpeedZ = 0;
-			param.feetTouchDown = hopTimeouchStatus[i];
+			param.feetTouchDown = m_touchStatus[i];
 			//param.roll
 			param.yaw = 0;
 			param.yawVel = velYaw;
@@ -194,7 +193,6 @@ void Controller::Hop()
 {
 	const float leanTime = 0.5f,hopTime = 1.0f;
 	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41;
-	const float ;
 
 	float timer = 0;
 	clock_t stime = clock(),etime = clock();
@@ -229,12 +227,12 @@ void Controller::Hop()
 	for(int i = 0;i<4;++i)
 	{
 		if(i == 1 || i == 2)
-			params[i].feetPosX = -t*exp_y1;
+			params[i].feetPosX = -exp_y1;
 		else
-			params[i].feetPosX = t*exp_y1;
+			params[i].feetPosX = exp_y1;
 		params[i].feetPosY = exp_y1;
 		params[i].feetPosZ = exp_z1;
-		
+
 		pos[i].x = params[i].feetPosX;
 		pos[i].y = params[i].feetPosY;
 		pos[i].z = params[i].feetPosZ;
@@ -244,23 +242,23 @@ void Controller::Hop()
 
 
 	//hop
-	const float x0 = -0.21;  //   //qi dian zuo biao 
+	const float x0 = -0.21;  //   //qi dian zuo biao
 	const float 	z0 = -0.31;
-	const float 	x1 = -0.25;  //qi shi su du fang xiang 
+	const float 	x1 = -0.25;  //qi shi su du fang xiang
 	const float 	z1 = -0.27;
-	const float 	x2 = -0.3;   //jie shu su du fang xiang		
+	const float 	x2 = -0.3;   //jie shu su du fang xiang
 	const float 	z2 = 0.01;
 	const float 	x3 = 0.05;  //jie shu zuo biao
 	const float 	z3 = -0.2;
 	const float	x_start = 0;
 	const float	z_start = -0.2;
-	
+
 	timer = 0;
 	etime = stime = clock();
 	while(timer < hopTime)
 	{
 		float t = timer/hopTime;
-		for (int i = 0; legnumber < 4; ++i)
+		for (int i = 0; i < 4; ++i)
 		{
 			params[i].feetPosY = x0 * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) +
 				3 * x1 * t / (hopTime * 0.5) * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) +
@@ -281,7 +279,7 @@ void Controller::Hop()
 	for(int i = 0;i<4;++i)
 	{
 		mt_params[i] = m_pControllers[i]->GetMotors()->GetMotorParams();
-		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::SetMotorParams(0.2,6));
+		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.2,6));
 	}
 
 	for (int i = 0; i < 4; i++)
@@ -290,8 +288,8 @@ void Controller::Hop()
 		params[i].feetPosZ = z3;
 		m_pControllers[i]->ApplyCtrlParam(params[i]);
 	}
-	
-	
+
+
 	for (int i = 0; i < 4; i++)
 	{
 		params[i].feetPosY = x_start;

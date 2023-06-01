@@ -7,6 +7,8 @@
 
 MOTOR_recv position_get(SerialPort& port, int Motor_id);
 MOTOR_recv postion_control(SerialPort& serial,int Motor_id, float Position);
+MOTOR_recv position_control_custom(SerialPort& serial,int Motor_id, float Position,float k_p,float k_w);
+
 MOTOR_recv postion_control_high(SerialPort& serial,int Motor_id, float Position);
 
 MOTOR_recv velocity_control(SerialPort& serial,int Motor_id,float Velicity);

@@ -98,7 +98,7 @@ void* LegController::_threadFunc(void* arg)
              if(pThis->m_mode == Position)
              {
                 motor.PositionCtrl(currentAngle.shoulderHorizontal,currentAngle.armRotation,currentAngle.armFeetIntersect);
-                m_currentPos = move;
+                pThis->m_currentPos = move;
              }else
             {
                 //motor.BlendCtrl(currentAngle,AxisTorque(0,0,0));

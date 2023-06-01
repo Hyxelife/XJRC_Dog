@@ -10,7 +10,7 @@ class LegMotors
     {
         float k_p;
         float k_w;
-        MotorParams(float kp,float kw):k_p = kp,k_w = kw{}
+        MotorParams(float kp = 0,float kw = 0):k_p(kp),k_w(kw){}
     };
 public:
     static void SetMotorScalar(float motorScalar) { ms_motorScalar = motorScalar; }
@@ -23,7 +23,7 @@ public:
     void TorqueCtrl(float shoulderTorque,float armTorque,float armFeetInterTorque);
     //void BlendCtrl(AxisMovement angle,AxisTorque torque);
     AxisMovement GetCurrentMotorAngle();
-    void SetMotorParams(MotorParams params);
+    void SetMotorParams(MotorParams params){m_params = params;}
     MotorParams GetMotorParams(){return m_params;}
 
 protected:

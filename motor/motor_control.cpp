@@ -67,6 +67,34 @@ MOTOR_recv position_get(SerialPort& serial, int Motor_id)
     return motor_r;
 }
 
+MOTOR_recv position_control_custom(SerialPort& serial,int motor_id,float Position,float k_p,float k_w)
+{
+MOTOR_send motor_run;
+    // receive message struct
+    MOTOR_recv motor_r;
+    // set the id of motor
+    motor_run.id = motor_id;
+    // set the motor type, A1Go1 or B1
+    motor_run.motorType = MotorType::A1Go1;
+    motor_run.mode = 10;
+    motor_run.T = 0.0;
+    motor_run.W = 0.0;
+    motor_run.Pos = Position;
+    motor_run.K_W = k_w;//12     //28.5     //4.5
+    motor_run.K_P = k_p;//1       //3     //0.05
+
+    motor_r.motorType = motor_run.motorType;
+    //cout<<"position"<<endl;
+    // encode data into motor commands
+    modify_data(&motor_run);
+    serial.sendRecv(&motor_run, &motor_r);
+    extract_data(&motor_r);
+    //if(Motor_id == 2)
+    //cout<<"leg:"<<Motor_id<<",position:"<<Position<<endl;
+    //usleep(100000);
+    return motor_r;
+}
+
 MOTOR_recv postion_control(SerialPort& serial, int Motor_id, float Position)
 {
     MOTOR_send motor_run;
