@@ -20,6 +20,7 @@ class Console
     bool IsDogStop(){return m_stop;}
     bool IsAutoControl(){return m_auto;}
     bool IsRequestExit(){return m_quit;}
+    bool IsHopping(){if(m_doHop){m_doHop = false;return true;}return false;}
 
     void UpdateMannualParams(float& x,float& y,float& r);
     void Update(bool stepOver);
@@ -40,4 +41,5 @@ class Console
     bool m_threadQuit;
     float m_zeroThres;
     float m_his_x,m_his_y,m_his_r;
+    bool m_doHop;
 };

@@ -2427,7 +2427,7 @@
 	<iostream>
 	<fstream>
 
-1685628734 source:/home/robocon/XJDog/motor/motor_control.cpp
+1685630945 source:/home/robocon/XJDog/motor/motor_control.cpp
 
 1679108098 source:/home/robocon/XJDog/motor/unitreeMotor.cpp
 
@@ -2448,7 +2448,7 @@
 	<iostream>
 	<strings.h>
 
-1685628548 source:/home/robocon/XJDog/Controller.cpp
+1685632135 source:/home/robocon/XJDog/Controller.cpp
 	"Controller.h"
 	<iostream>
 
@@ -2458,18 +2458,18 @@
 	"Sensor.h"
 	"LegController.h"
 
-1685246936 source:/home/robocon/XJDog/main.cpp
+1685631996 source:/home/robocon/XJDog/main.cpp
 	<iostream>
 	<stdio.h>
 	"Console.h"
 	"Controller.h"
 
-1685628193 /home/robocon/XJDog/Console.h
+1685631967 /home/robocon/XJDog/Console.h
 	"MultiThread.h"
 	<time.h>
 	<termios.h>
 
-1685628193 source:/home/robocon/XJDog/Console.cpp
+1685632170 source:/home/robocon/XJDog/Console.cpp
 	"Console.h"
 	<stdio.h>
 	<math.h>

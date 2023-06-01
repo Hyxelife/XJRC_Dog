@@ -5,7 +5,7 @@ using  namespace std;
 
 #define STOP_LEG    0
 #ifdef DEBUG_MODE
-bool enableMap[4] = {true,true,true,true};
+bool enableMap[4] = {true,false,false,false};
 #endif // DEBUG_MODE
 
 
@@ -191,8 +191,9 @@ PacePlanner& Controller::GetPacePlanner()
 
 void Controller::Hop()
 {
-	const float leanTime = 0.5f,hopTime = 1.0f;
-	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41;
+printf("start Hop\n");
+	const float leanTime = 0.5f,hopTime = 1.0f,hopbackTime = 1.0f;
+	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41,exp_y2 = -10,exp_z2 = -30;
 
 	float timer = 0;
 	clock_t stime = clock(),etime = clock();
@@ -200,10 +201,12 @@ void Controller::Hop()
 	LegController::CtrlParam params[4];
 	for(int i = 0;i<4;++i)
 	{
+        if(enableMap[i])
 		pos[i] = m_pControllers[i]->GetCurrentPosition();
 		params[i].ctrlMask = LegController::Position;
 	}
 
+	printf("do lie down\n");
 	//lie down
 	while(timer < leanTime)
 	{
@@ -211,74 +214,84 @@ void Controller::Hop()
 		for(int i = 0;i<4;++i)
 		{
 			if(i == 1 || i == 2)
-				params[i].feetPosX = pos[i].x*(1.10f-t)-t*exp_y1;
+				params[i].feetPosX = pos[i].x*(1.0f-t)-t*exp_x1;
 			else
-				params[i].feetPosX = pos[i].x*(1.10f-t)+t*exp_y1;
-			params[i].feetPosY = pos[i].y*(1.10f-t)+t*exp_y1;
-			params[i].feetPosZ = pos[i].z*(1.10f-t)+t*exp_z1;
+				params[i].feetPosX = pos[i].x*(1.0f-t)+t*exp_x1;
+			params[i].feetPosY = pos[i].y*(1.0f-t)+t*exp_y1;
+			params[i].feetPosZ = pos[i].z*(1.0f-t)+t*exp_z1;
+			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
 
-
+        //printf("%f\n",timer);
 		etime = clock();
 		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
-		stime = stime;
+		stime = etime;
 	}
-	for(int i = 0;i<4;++i)
-	{
-		if(i == 1 || i == 2)
-			params[i].feetPosX = -exp_y1;
-		else
-			params[i].feetPosX = exp_y1;
-		params[i].feetPosY = exp_y1;
-		params[i].feetPosZ = exp_z1;
-
-		pos[i].x = params[i].feetPosX;
-		pos[i].y = params[i].feetPosY;
-		pos[i].z = params[i].feetPosZ;
-		m_pControllers[i]->ApplyCtrlParam(params[i]);
-
-	}
-
-
 	//hop
-	const float x0 = -0.21;  //   //qi dian zuo biao
-	const float 	z0 = -0.31;
-	const float 	x1 = -0.25;  //qi shi su du fang xiang
-	const float 	z1 = -0.27;
-	const float 	x2 = -0.3;   //jie shu su du fang xiang
-	const float 	z2 = 0.01;
-	const float 	x3 = 0.05;  //jie shu zuo biao
-	const float 	z3 = -0.2;
-	const float	x_start = 0;
-	const float	z_start = -0.2;
-
-	timer = 0;
+	printf("do hop\n");
+    timer = 0;
 	etime = stime = clock();
 	while(timer < hopTime)
 	{
-		float t = timer/hopTime;
+        float t = timer / leanTime;
+		for(int i = 0;i<4;++i)
+		{
+			params[i].feetPosY = exp_y1*(1.0f-t)+t*exp_y2;
+			params[i].feetPosZ = exp_z1*(1.0f-t)+t*exp_z2;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+        etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
+
+	//hop back
+	const float x0 = -21;  //   //qi dian zuo biao
+	const float 	z0 = -31;
+	const float 	x1 = -25;  //qi shi su du fang xiang
+	const float 	z1 = -27;
+	const float 	x2 = -30;   //jie shu su du fang xiang
+	const float 	z2 = 1;
+	const float 	x3 = 5;  //jie shu zuo biao
+	const float 	z3 = -20;
+	const float	x_start = 0;
+	const float	z_start = -20;
+
+	timer = 0;
+	etime = stime = clock();
+	printf("do retrive\n");
+	while(timer < hopbackTime)
+	{
+		float t = timer/hopbackTime;
 		for (int i = 0; i < 4; ++i)
 		{
-			params[i].feetPosY = x0 * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) +
-				3 * x1 * t / (hopTime * 0.5) * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) +
-				3 * x2 * (t / (hopTime * 0.5)) * (t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) + x3 * (t / (hopTime * 0.5)) * (t / (hopTime * 0.5)) * (t / (hopTime * 0.5));
-			params[i].feetPosZ = z0 * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) +
-				3 * z1 * t / (hopTime * 0.5) * (1 - t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) +
-				3 * z2 * (t / (hopTime * 0.5)) * (t / (hopTime * 0.5)) * (1 - t / (hopTime * 0.5)) + z3 * (t / (hopTime * 0.5)) * (t / (hopTime * 0.5)) * (t / (hopTime * 0.5));
+			params[i].feetPosY = x0 * (1 - t) * (1 - t) * (1 - t) +
+				3 * x1 * t  * (1 - t) * (1 - t) +
+				3 * x2 * (t) * (t ) * (1 - t ) + x3 * (t) * (t) * (t);
+			params[i].feetPosZ = z0 * (1 - t) * (1 - t) * (1 - t) +
+				3 * z1 * t * (1 - t) * (1 - t) +
+				3 * z2 * (t) * (t) * (1 - t) + z3 * (t) * (t) * (t);
+				if(i == 0)
+				printf("x=%f,y=%f,z=%f\n",params[i].feetPosX,params[i].feetPosY,params[i].feetPosZ);
+			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
 		etime = clock();
 		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
-		stime = stime;
+		stime = etime;
 	}
 
 
 	//touch down
+	printf("do touch down\n");
 	LegMotors::MotorParams mt_params[4];
 	for(int i = 0;i<4;++i)
 	{
+        if(enableMap[i])
 		mt_params[i] = m_pControllers[i]->GetMotors()->GetMotorParams();
+		if(enableMap[i])
 		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.2,6));
 	}
 
@@ -286,6 +299,7 @@ void Controller::Hop()
 	{
 		params[i].feetPosY = x3;
 		params[i].feetPosZ = z3;
+		if(enableMap[i])
 		m_pControllers[i]->ApplyCtrlParam(params[i]);
 	}
 
@@ -294,11 +308,17 @@ void Controller::Hop()
 	{
 		params[i].feetPosY = x_start;
 		params[i].feetPosZ = z_start;
+		if(enableMap[i])
 		m_pControllers[i]->ApplyCtrlParam(params[i]);
 	}
 
 	for(int i = 0;i<4;++i)
+	{
+        if(enableMap[i])
 		m_pControllers[i]->GetMotors()->SetMotorParams(mt_params[i]);
+		}
+
+    m_time = -1;
 }
 
 

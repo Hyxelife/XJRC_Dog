@@ -177,7 +177,7 @@ void Console::UpdateMannualParams(float& x,float& y,float& r)
     dt /= (float)CLOCKS_PER_SEC;
     mutex_lock(m_mutexDesc);
     float err_x = m_ctrl_x - m_out_x,err_y = m_ctrl_y-m_out_y,err_r = m_ctrl_r-m_out_r;
-    
+
     for(int i = 0;i<6;++i)
     {
         if(m_ctrlTime[i]<=0)continue;
@@ -248,6 +248,12 @@ void Console::Update(bool stepOver)
             printf("[Console]:enter auto mode!\n");
             m_need_auto = -1;
         }
+        if(m_need_hop != -1)
+        {
+            m_need_hop = -1;
+            m_doHop = true;
+            printf("[Console]:do hopping..........\nhop hop hop!!!\n");
+        }
 
     }else if(stepOver)
     {
@@ -280,6 +286,7 @@ void Console::Update(bool stepOver)
                 if(m_need_hop)
                 {
                     m_need_hop = -1;
+                    m_doHop = true;
                     printf("[Console]:do hopping..........\nhop hop hop!!!\n");
                 }
                 m_need_stop = -1;

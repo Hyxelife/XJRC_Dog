@@ -17,15 +17,15 @@ int main()
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-         AxisMovement(4.91949,3.08408,4.74078),
+         AxisMovement(-5.13808,13.5589,-6.09567),
         AxisMovement(5.24776,4.15786,0.671885),
         AxisMovement(1.21645,3.32031,1.11789),
         AxisMovement(1.90483,0.584065,0.265763) ,
 
         },
         {
-            //AxisMovement(0,DEG(90),DEG(90)),
-            AxisMovement(DEG(23.66),DEG(180-21.45),DEG(18.95)),
+            AxisMovement(DEG(90),DEG(90),DEG(90)),
+            //AxisMovement(DEG(23.66),DEG(180-21.45),DEG(18.95)),
             AxisMovement(DEG(26.66),DEG(180-21.45),DEG(19.95)),
             AxisMovement(DEG(23.66),DEG(180-21.45),DEG(18.95)),
             AxisMovement(DEG(23.66),DEG(180-21.45),DEG(18.95)),
@@ -58,6 +58,7 @@ int main()
     {
         con.Update(false);
         sysQuit = con.IsRequestExit();
+        if(con.IsHopping()){controller.Hop();}
         if(con.IsDogStop()){controller.ClearTime();continue;}
         if(con.IsAutoControl())
         {
