@@ -43,6 +43,13 @@ void* Console::consoleFunc(void* arg)
 
 #define CTRL_TIME   0.5f
 
+#define ID_W      0
+#define ID_A      1
+#define ID_S      2
+#define ID_D      3
+#define ID_Q      4
+#define ID_E      5
+
 void Console::console_()
 {
     char cmd;
@@ -58,14 +65,15 @@ void Console::console_()
 
             switch(cmd)
             {
-                case 'q':m_ctrl_r = 1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
-                case 'e':m_ctrl_r = -1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
-                case 'w':m_ctrl_y = 1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
-                case 'a':m_ctrl_x = -1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
-                case 's':m_ctrl_y = -1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
-                case 'd':m_ctrl_x = 1;m_ctrlTime = CTRL_TIME;m_need_stop = 0;break;
+                case 'q':m_ctrl_r = 1;m_ctrlTime[ID_Q] = CTRL_TIME;m_need_stop = 0;break;
+                case 'e':m_ctrl_r = -1;m_ctrlTime[ID_E] = CTRL_TIME;m_need_stop = 0;break;
+                case 'w':m_ctrl_y = 1;m_ctrlTime[ID_W] = CTRL_TIME;m_need_stop = 0;break;
+                case 'a':m_ctrl_x = -1;m_ctrlTime[ID_A] = CTRL_TIME;m_need_stop = 0;break;
+                case 's':m_ctrl_y = -1;m_ctrlTime[ID_S] = CTRL_TIME;m_need_stop = 0;break;
+                case 'd':m_ctrl_x = 1;m_ctrlTime[ID_D] = CTRL_TIME;m_need_stop = 0;break;
                 case 'f':m_need_stop = 1;break;
                 case 'x':outstatus();break;
+                case ' ':m_need_stop = 1;m_need_hop = 1;break;
                 case 'p':m_need_mannual = 0;m_ctrl_x = m_ctrl_y = m_ctrl_r = 0;break;
             }
             mutex_unlock(m_mutexDesc);
@@ -97,6 +105,7 @@ void Console::console_()
                     printf("when system is mannually controlling:\n");
                     printf("\t[w/a/s/d] moving control\n");
                     printf("\t[q/e] rotating control\n");
+                    printf("\t[Space] hop\n");
                     printf("\t[p] quit control\n");
                     printf("when system is automatically controlling:\n");
                     printf("\t[q] quit\n");
@@ -125,7 +134,7 @@ Console::Console(float kp,float kw,float zerosThres)
     m_stop = true;
     m_quit = false;
 
-    m_need_mannual = m_need_auto = m_need_stop = m_need_quit = -1;
+    m_need_hop = m_need_mannual = m_need_auto = m_need_stop = m_need_quit = -1;
 
     m_threadQuit = true;
     m_zeroThres = zerosThres;
@@ -168,9 +177,25 @@ void Console::UpdateMannualParams(float& x,float& y,float& r)
     dt /= (float)CLOCKS_PER_SEC;
     mutex_lock(m_mutexDesc);
     float err_x = m_ctrl_x - m_out_x,err_y = m_ctrl_y-m_out_y,err_r = m_ctrl_r-m_out_r;
-    if(m_ctrlTime <= 0)
-    {m_ctrl_x = 0;m_ctrl_y = 0;m_ctrl_r = 0;m_ctrlTime = 0;}
-    m_ctrlTime-=dt;
+    
+    for(int i = 0;i<6;++i)
+    {
+        if(m_ctrlTime[i]<=0)continue;
+        m_ctrlTime[i]-=dt;
+        if(m_ctrlTime[i] <= 0)
+        {
+            switch (i)
+            {
+            case ID_W:
+            case ID_S:m_ctrl_y = 0;break;
+            case ID_A:
+            case ID_D:m_ctrl_x = 0;break;
+            case ID_E:
+            case ID_Q:m_ctrl_r = 0;break;
+            }
+            m_ctrlTime[i] = 0;
+        }
+    }
     mutex_unlock(m_mutexDesc);
 
     m_inc_x += m_kp*err_x*dt+m_kw*(err_x-m_his_x);
@@ -252,6 +277,11 @@ void Console::Update(bool stepOver)
             {
                 m_stop = true;
                 printf("[Console]:stopped!\n");
+                if(m_need_hop)
+                {
+                    m_need_hop = -1;
+                    printf("[Console]:do hopping..........\nhop hop hop!!!\n");
+                }
                 m_need_stop = -1;
             }
         }

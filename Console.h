@@ -30,10 +30,10 @@ class Console
     MUTEX m_mutexDesc;
     clock_t m_lastUpdateTime;
     float m_ctrl_x,m_ctrl_y,m_ctrl_r;
-    float m_ctrlTime;
+    float m_ctrlTime[6];
     float m_out_x,m_out_y,m_out_r;
     float m_inc_x,m_inc_y,m_inc_r;
-    int m_need_mannual,m_need_auto,m_need_stop,m_need_quit;
+    int m_need_mannual,m_need_auto,m_need_stop,m_need_quit,m_need_hop;
     bool m_mannual,m_auto,m_stop,m_quit;
 
     float m_kp,m_kw;

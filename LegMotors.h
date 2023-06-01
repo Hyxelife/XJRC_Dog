@@ -5,6 +5,13 @@
 
 class LegMotors
 {
+    public:
+    struct MotorParams
+    {
+        float k_p;
+        float k_w;
+        MotorParams(float kp,float kw):k_p = kp,k_w = kw{}
+    };
 public:
     static void SetMotorScalar(float motorScalar) { ms_motorScalar = motorScalar; }
     static float GetMotorScalar() { return ms_motorScalar; }
@@ -16,6 +23,8 @@ public:
     void TorqueCtrl(float shoulderTorque,float armTorque,float armFeetInterTorque);
     //void BlendCtrl(AxisMovement angle,AxisTorque torque);
     AxisMovement GetCurrentMotorAngle();
+    void SetMotorParams(MotorParams params);
+    MotorParams GetMotorParams(){return m_params;}
 
 protected:
     void _initCheck();
@@ -32,4 +41,5 @@ protected:
     std::vector<float> m_motorSign;
     static bool ms_systemSafe;
     std::string m_name;
+    MotorParams m_params;
 };

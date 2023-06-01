@@ -82,6 +82,8 @@ public:
     void SetCtrlMode(CtrlMode mode);
     void SetIMUReading(IMUReading& reading);
     bool Ready();
+    FeetMovement GetCurrentPosition(){return m_currentPos;}
+    LegMotors* GetMotors(){return &m_motors;}
 protected:
     void _updateParam(LegController::CtrlParam& currentParam,
         LegController::CtrlParam& lastParam,
@@ -90,6 +92,7 @@ protected:
 
     void _doStartUp();
 protected:
+    FeetMovement m_currentPos;
     float m_startUpTime;
 
     bool ms_systemSafe;

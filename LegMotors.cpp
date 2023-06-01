@@ -63,7 +63,8 @@ LegMotors::LegMotors(AxisMovement zeroPos,std::vector<float> motorSign,float mot
 :m_serial(portName),
 m_motorSign(motorSign),
 m_zeros(zeroPos),
-m_name(portName)
+m_name(portName),
+m_params(0.2,6)
 {
     MOTOR_recv recv = position_get(m_serial, 0);
     m_currentAngle.shoulderHorizontal = m_motorSign[0] * (recv.Pos - m_zeros.shoulderHorizontal) / ms_motorScalar;

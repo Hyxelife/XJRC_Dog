@@ -96,8 +96,10 @@ void* LegController::_threadFunc(void* arg)
             //if(pThis->m_legID == 1)
              //   std::cout<<currentAngle.shoulderHorizontal<<" "<<currentAngle.armRotation<<" "<<currentAngle.armFeetIntersect<<std::endl;
              if(pThis->m_mode == Position)
+             {
                 motor.PositionCtrl(currentAngle.shoulderHorizontal,currentAngle.armRotation,currentAngle.armFeetIntersect);
-            else
+                m_currentPos = move;
+             }else
             {
                 //motor.BlendCtrl(currentAngle,AxisTorque(0,0,0));
             }
