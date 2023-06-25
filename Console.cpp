@@ -28,10 +28,10 @@ int Console::getch_(void)
 
 void Console::outstatus()
 {
-    printf("n_mannual:%d,mannual:%d\nn_auto:%d,auto:%d\nn_stop:%d,stop:%d\nn_quit:%d,quit:%d\nctrl[%.3f,%.3f,%.3f]\nout[%.3f%.3f%.3f]\nerr_his[%.3f,%.3f,%.3f]\n\
+    //printf("n_mannual:%d,mannual:%d\nn_auto:%d,auto:%d\nn_stop:%d,stop:%d\nn_quit:%d,quit:%d\nctrl[%.3f,%.3f,%.3f]\nout[%.3f%.3f%.3f]\nerr_his[%.3f,%.3f,%.3f]\n\
     inc[%.3f,%.3f,%.3f]"
-    ,m_need_mannual,m_mannual,m_need_auto,m_auto,m_need_stop,m_stop,m_need_quit,m_quit,m_ctrl_x,m_ctrl_y,m_ctrl_r,m_out_x,m_out_y,m_out_r,
-    m_his_x,m_his_y,m_his_r,m_inc_x,m_inc_y,m_inc_r);
+    //,m_need_mannual,m_mannual,m_need_auto,m_auto,m_need_stop,m_stop,m_need_quit,m_quit,m_ctrl_x,m_ctrl_y,m_ctrl_r,m_out_x,m_out_y,m_out_r,
+    //m_his_x,m_his_y,m_his_r,m_inc_x,m_inc_y,m_inc_r);
 }
 
 void* Console::consoleFunc(void* arg)
@@ -186,12 +186,12 @@ void Console::UpdateMannualParams(float& x,float& y,float& r)
         {
             switch (i)
             {
-            case ID_W:
-            case ID_S:m_ctrl_y = 0;break;
-            case ID_A:
-            case ID_D:m_ctrl_x = 0;break;
-            case ID_E:
-            case ID_Q:m_ctrl_r = 0;break;
+                case ID_W:
+                case ID_S:m_ctrl_y = 0;break;
+                case ID_A:
+                case ID_D:m_ctrl_x = 0;break;
+                case ID_E:
+                case ID_Q:m_ctrl_r = 0;break;
             }
             m_ctrlTime[i] = 0;
         }

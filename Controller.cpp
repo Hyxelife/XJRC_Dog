@@ -5,7 +5,7 @@ using  namespace std;
 
 #define STOP_LEG    0
 #ifdef DEBUG_MODE
-bool enableMap[4] = {true,false,false,false};
+const bool enableMap[4] = {true,true,true,true};
 #endif // DEBUG_MODE
 
 
@@ -192,8 +192,8 @@ PacePlanner& Controller::GetPacePlanner()
 void Controller::Hop()
 {
 printf("start Hop\n");
-	const float leanTime = 0.5f,hopTime = 1.0f,hopbackTime = 1.0f;
-	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41,exp_y2 = -10,exp_z2 = -30;
+	const float leanTime = 5.0f,hopTime = 3.0f,hopbackTime = 3.0f,restTime = 3.0f;
+	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41,exp_y2 = -10,exp_z2 = -31;
 
 	float timer = 0;
 	clock_t stime = clock(),etime = clock();
@@ -203,10 +203,10 @@ printf("start Hop\n");
 	{
         if(enableMap[i])
 		pos[i] = m_pControllers[i]->GetCurrentPosition();
-		params[i].ctrlMask = LegController::Position;
+		params[i].ctrlMask = LegController::feetPos;
 	}
-
-	printf("do lie down\n");
+    //printf("current:%.3f,%.3f,%.3f\n",pos[0].x,pos[0].y,pos[0].z);
+	//printf("do lie down\n");
 	//lie down
 	while(timer < leanTime)
 	{
@@ -228,13 +228,14 @@ printf("start Hop\n");
 		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
 		stime = etime;
 	}
+	//char ch = getchar();
 	//hop
-	printf("do hop\n");
+	//printf("do hop\n");
     timer = 0;
 	etime = stime = clock();
 	while(timer < hopTime)
 	{
-        float t = timer / leanTime;
+        float t = timer / hopTime;
 		for(int i = 0;i<4;++i)
 		{
 			params[i].feetPosY = exp_y1*(1.0f-t)+t*exp_y2;
@@ -246,9 +247,9 @@ printf("start Hop\n");
 		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
 		stime = etime;
 	}
-
+    //ch = getchar();
 	//hop back
-	const float x0 = -21;  //   //qi dian zuo biao
+	const float x0 = -10;  //   //qi dian zuo biao
 	const float 	z0 = -31;
 	const float 	x1 = -25;  //qi shi su du fang xiang
 	const float 	z1 = -27;
@@ -261,7 +262,7 @@ printf("start Hop\n");
 
 	timer = 0;
 	etime = stime = clock();
-	printf("do retrive\n");
+	//printf("do retrive\n");
 	while(timer < hopbackTime)
 	{
 		float t = timer/hopbackTime;
@@ -274,7 +275,7 @@ printf("start Hop\n");
 				3 * z1 * t * (1 - t) * (1 - t) +
 				3 * z2 * (t) * (t) * (1 - t) + z3 * (t) * (t) * (t);
 				if(i == 0)
-				printf("x=%f,y=%f,z=%f\n",params[i].feetPosX,params[i].feetPosY,params[i].feetPosZ);
+				//printf("x=%f,y=%f,z=%f\n",params[i].feetPosX,params[i].feetPosY,params[i].feetPosZ);
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -285,7 +286,8 @@ printf("start Hop\n");
 
 
 	//touch down
-	printf("do touch down\n");
+	//ch = getchar();
+	//printf("do touch down\n");
 	LegMotors::MotorParams mt_params[4];
 	for(int i = 0;i<4;++i)
 	{
@@ -303,22 +305,33 @@ printf("start Hop\n");
 		m_pControllers[i]->ApplyCtrlParam(params[i]);
 	}
 
-
-	for (int i = 0; i < 4; i++)
+    timer = 0;etime = stime = clock();
+	while(timer < restTime)
 	{
-		params[i].feetPosY = x_start;
-		params[i].feetPosZ = z_start;
-		if(enableMap[i])
-		m_pControllers[i]->ApplyCtrlParam(params[i]);
+		float t = timer / restTime;
+		for(int i = 0;i<4;++i)
+		{
+			params[i].feetPosY = x3*(1.0f-t)+t*pos[i].y;
+			params[i].feetPosZ = z3*(1.0f-t)+t*pos[i].z;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+
+        //printf("%f\n",timer);
+		etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
 	}
+
 
 	for(int i = 0;i<4;++i)
 	{
         if(enableMap[i])
 		m_pControllers[i]->GetMotors()->SetMotorParams(mt_params[i]);
-		}
+    }
 
     m_time = -1;
+    //printf("end\n");
 }
 
 

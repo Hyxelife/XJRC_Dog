@@ -108,15 +108,15 @@ MOTOR_recv postion_control(SerialPort& serial, int Motor_id, float Position)
     motor_run.T = 0.0;
     motor_run.W = 0.0;
     motor_run.Pos = Position;
-    motor_run.K_W = 6;//12     //28.5     //4.5
-    motor_run.K_P = 0.2;//1       //3     //0.05
+    motor_run.K_W = 4;//12     //28.5     //4.5
+    motor_run.K_P = 0.1;//1       //3     //0.05
 
     motor_r.motorType = motor_run.motorType;
     //cout<<"position"<<endl;
     // encode data into motor commands
-    //modify_data(&motor_run);
-    //serial.sendRecv(&motor_run, &motor_r);
-    //extract_data(&motor_r);
+    modify_data(&motor_run);
+    serial.sendRecv(&motor_run, &motor_r);
+   extract_data(&motor_r);
     //if(Motor_id == 2)
     //cout<<"leg:"<<Motor_id<<",position:"<<Position<<endl;
     //usleep(100000);

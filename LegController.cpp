@@ -278,6 +278,7 @@ bool LegController::Ready()
 
 void LegController::ApplyCtrlParam(LegController::CtrlParam &param)
 {
+static long long cnt = 0;
     mutex_lock(m_mutexDesc);
     if(param.ctrlMask & topSpeed)
     {
@@ -289,6 +290,12 @@ void LegController::ApplyCtrlParam(LegController::CtrlParam &param)
         m_ctrlParam.feetPosX = param.feetPosX;
         m_ctrlParam.feetPosY = param.feetPosY;
         m_ctrlParam.feetPosZ = param.feetPosZ;
+
+        if(cnt % 10000 == 0)
+        {cnt = 0;
+        //printf("pos:%.3f,%.3f,%.3f\n",param.feetPosX,param.feetPosY,param.feetPosZ);
+        }
+        cnt++;
     }
     if(param.ctrlMask & orientation)
     {

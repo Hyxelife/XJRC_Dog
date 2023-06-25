@@ -11,12 +11,12 @@ std::vector<LegMotors*> LegMotors::ms_registerMotor;
 #define DEG(deg)    deg*3.141592653589/180
 #define RAD(rad)    rad*180/3.141592653589
 
-#define SAFE_TRAP(msg)      {\
+#define SAFE_TRAP(msg,info)      {\
                                 ms_systemSafe = false;\
                                 int motorID;\
                                 for(motorID = 0;motorID < ms_registerMotor.size();motorID++)\
                                 {if(this == ms_registerMotor[motorID])break;}\
-                                while(true){cout<<"[LegMotor]:system unsafe!!!motor:"<<m_name<<msg<<endl;usleep(10000000);}\
+                                while(true){cout<<"[LegMotor]:system unsafe!!!motor:"<<m_name<<msg<<"@"<<info<<endl;usleep(10000000);}\
                             }
 
 
@@ -28,35 +28,35 @@ void LegMotors::_checkPos(float shoulderPos,float armPos,float feetPos)
 
     float deltaAngle = fabsf(m_currentAngle.shoulderHorizontal-shoulderPos);
     if(deltaAngle >= safetyAngle)
-        SAFE_TRAP("[LegMotor]:1电机控制角度相差过大!");
+        SAFE_TRAP("[LegMotor]:1电机控制角度相差过大!",deltaAngle);
     deltaAngle = fabsf(m_currentAngle.armRotation-armPos);
     if(deltaAngle >= safetyAngle)
-        SAFE_TRAP("[LegMotor]:2电机控制角度相差过大!");
+        SAFE_TRAP("[LegMotor]:2电机控制角度相差过大!",deltaAngle);
     deltaAngle = fabsf(m_currentAngle.armFeetIntersect - feetPos);
     if(deltaAngle >= safetyAngle)
-        SAFE_TRAP("[LegMotor]:3电机控制角度相差过大!");
+        SAFE_TRAP("[LegMotor]:3电机控制角度相差过大!",deltaAngle);
 }
 void LegMotors::_checkRange(float shoudlerAngle,float armAngle,float feetAngle)
 {
     const float safetyShoulder[2] = {DEG(-40),DEG(40)};
-    const float safetyArm[2] = {DEG(30),DEG(175)};
+    const float safetyArm[2] = {DEG(30),DEG(240)};
     const float safetyFeet[2] = {DEG(15),DEG(140)};
     while(!ms_systemSafe);
 
     if(shoudlerAngle < safetyShoulder[0])
-        SAFE_TRAP("[LegMotor]:shoudler angle, too small!");
+        SAFE_TRAP("[LegMotor]:shoudler angle, too small!",shoudlerAngle);
     if(shoudlerAngle > safetyShoulder[1])
-        SAFE_TRAP("[LegMotor]:shoudler angle, too large!");
+        SAFE_TRAP("[LegMotor]:shoudler angle, too large!",shoudlerAngle);
 
     if(armAngle < safetyArm[0])
-        SAFE_TRAP("[LegMotor]:arm angle, too small!");
+        SAFE_TRAP("[LegMotor]:arm angle, too small!",armAngle);
     if(armAngle > safetyArm[1])
-        SAFE_TRAP("[LegMotor]:arm angle, too large!");
+        SAFE_TRAP("[LegMotor]:arm angle, too large!",armAngle);
 
     if(feetAngle < safetyFeet[0])
-        SAFE_TRAP("[LegMotor]:feet angle, too small!");
+        SAFE_TRAP("[LegMotor]:feet angle, too small!",feetAngle);
     if(feetAngle > safetyFeet[1])
-        SAFE_TRAP("[LegMotor]:feet angle, too large!");
+        SAFE_TRAP("[LegMotor]:feet angle, too large!",feetAngle);
 }
 
 LegMotors::LegMotors(AxisMovement zeroPos,std::vector<float> motorSign,float motorScalar,std::string portName)
@@ -109,8 +109,8 @@ void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInt
     //cout << "position control:\n"<< str;
     //   usleep(100000);
     //return;
-    //_checkPos(shoulderAngle, armAngle, armFeetInterAngle);
-    //_checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+    _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
+    _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
     MOTOR_recv recv;
     recv = postion_control(m_serial,0,m_motorSign[0]*shoulderAngle*ms_motorScalar+m_zeros.shoulderHorizontal);
     m_currentAngle.shoulderHorizontal = m_motorSign[0]*(recv.Pos-m_zeros.shoulderHorizontal)/ms_motorScalar;
