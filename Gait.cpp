@@ -41,12 +41,18 @@ Gait::Gait(GaitDesc desc[4],float duration)
         m_desc[i].phase = desc[i].phase/m_duration;
     }
 }
+
+#include <stdio.h>
+
 std::vector<float> Gait::GetMovingStatus(float time)
 {
     std::vector<float> phase(4);
     int period = int(time/m_duration);
     time -= period*m_duration;
     time /= m_duration;
+    //static int cnt = 0;
+    //if(cnt++ == 1000)
+     //   printf("time:%f\n",time*100),cnt = 0;
     for(int i = 0;i<4;++i)
     {
         float dt = time-m_desc[i].phase;

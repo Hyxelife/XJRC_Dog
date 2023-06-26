@@ -9,8 +9,8 @@ class Controller
     public:
     struct MechParam
     {
-        MechParam(float dogWidth,float dogHeight):
-        dogWidth(dogWidth),dogHeight(dogHeight){}
+        MechParam(float dogWidth,float dogLength):
+        dogWidth(dogWidth),dogLength(dogLength){}
         float dogWidth,dogLength;
     };
     struct CtrlInitParam
@@ -33,7 +33,7 @@ class Controller
 public:
     Controller(
         std::vector<std::string> serialName,
-        std::vector<AxisMovement> motorAngle, 
+        std::vector<AxisMovement> motorAngle,
         std::vector<AxisMovement> realAngle,
         std::vector<std::vector<float>> motorSign,
         LegController::VMCParam param,
@@ -42,11 +42,12 @@ public:
     ~Controller();
 
     void EnableSmoothCtrl(bool enable);
-    bool Update(float velX,float velY,float velYaw,bool hop,bool restrictHop);
+    bool Update(float velX,float velY,float velYaw,bool hop,bool restrictHop = false);
     void EnableVMC(bool enable);
     void Start(float startUpTime);
     void Exit();
     bool IsMoving(){return m_moving;}
+    bool IsStop(){return m_stop;}
     void StopMoving();
     void StartMoving();
     PacePlanner& GetPacePlanner();

@@ -5,7 +5,7 @@ using  namespace std;
 
 #define STOP_LEG    0
 #ifdef DEBUG_MODE
-const bool enableMap[4] = {true,true,true,true};
+const bool enableMap[4] = {true,false,false,false};
 #endif // DEBUG_MODE
 
 #define X	0
@@ -34,7 +34,7 @@ Controller::Controller(
 	m_maxVel[R] = initParam.maxVelRt;
 
 	for(int i = 0;i<3;++i)
-		m_incVel[i] = m_hisVel[i] = [i] = 0;
+		m_incVel[i] = m_hisVel[i] = m_outVel[i] = 0;
 	m_time = -1;
 	AxisMovement angle;
 	float scalar = LegMotors::GetMotorScalar();
@@ -50,6 +50,8 @@ Controller::Controller(
             m_pControllers[i] = new LegController(param, i, serialName[i],angle,motorSign[i]);
 	}
 	m_smthCtrl = true;
+	m_needHop = m_needStop = false;
+	m_stop = true;
 }
 
 Controller::~Controller()
@@ -65,7 +67,25 @@ Controller::~Controller()
 
 void Controller::Start(float startUpTime)
 {
-	Update(0, 0, 0);
+    m_planner.SetVelocity(0,0,0);
+	LegController::CtrlParam param;
+	m_planner.Update(0, m_pos, m_touchStatus);
+
+    for (int i = 0; i < 4; ++i)
+    {
+        param.ctrlMask = LegController::feetPos;
+        param.feetPosX = m_pos[i].x;
+        param.feetPosY = m_pos[i].y;
+        param.feetPosZ = m_pos[i].z;
+        #ifdef DEBUG_MODE
+        if(enableMap[i])
+        #endif // DEBUG_MODE
+        {m_pControllers[i]->ApplyCtrlParam(param);}
+    }
+
+
+
+
 	for (int i = 0; i < 4; ++i)
 	{
 	#ifdef DEBUG_MODE
@@ -101,14 +121,14 @@ void Controller::Exit()
 	}
 }
 
-void Controller::_updateVel(float x,float y,float r,float deltaTime)
+void Controller::_updateVel(float x,float y,float r,float dt)
 {
 	float ctrlVel[3] = {x*m_maxVel[X],y*m_maxVel[Y],r*m_maxVel[R]};
     float err_x = ctrlVel[X] - m_outVel[X],err_y = ctrlVel[Y]-m_outVel[Y],err_r = ctrlVel[R]-m_outVel[R];
 
 	if(m_smthCtrl)
 	{
-		m_incVel[X] += m_kp*m_err*dt+m_kw*(err_x-m_hisVel[X]);
+		m_incVel[X] += m_kp*err_x*dt+m_kw*(err_x-m_hisVel[X]);
 		m_incVel[Y] += m_kp*err_y*dt+m_kw*(err_y-m_hisVel[Y]);
 		m_incVel[R] += m_kp*err_r*dt+m_kw*(err_r-m_hisVel[R]);
 
@@ -125,34 +145,41 @@ void Controller::_updateVel(float x,float y,float r,float deltaTime)
 		m_outVel[Y] = ctrlVel[Y];
 		m_outVel[R] = ctrlVel[R];
 	}
+	if(fabsf(m_outVel[X])<m_movingThres)m_outVel[X] = 0;
+	if(fabsf(m_outVel[Y])<m_movingThres)m_outVel[Y] = 0;
+	if(fabsf(m_outVel[R])<m_movingThres*0.1)m_outVel[R] = 0;
+
+
 	m_moving = fabsf(m_outVel[X])>m_movingThres ||
 				fabsf(m_outVel[Y])>m_movingThres ||
-				fabsf(m_outVel[R])>m_moving;
+				fabsf(m_outVel[R])>m_movingThres;
 }
 
-bool Controller::Update(float velX, float velY, float velYaw,bool Hop,bool restrictHop = false)
+bool Controller::Update(float velX, float velY, float velYaw,bool Hop,bool restrictHop)
 {
 	CLAMP(velX,-1,1);
 	CLAMP(velY,-1,1);
 	CLAMP(velYaw,-1,1);
 
 	if(m_needStop)
-		velX = velY = velR = 0;
+		velX = velY = velYaw = 0;
 
 
 	if(m_stop)
 	{
-		if(m_needHop)_doHop();
+		if(m_needHop || Hop){_doHop();m_needHop =false;}
 		if(velX != 0 || velY != 0 || velYaw != 0)StartMoving();
 		else return false;
 	}else
 	{
-		if(restrictHop)
-		{
-			m_needHop = true;
-			m_needStop = true;
-			return;
-		}
+        if(Hop)
+        {
+            if(restrictHop)
+            {
+                m_needHop = true;
+                m_needStop = true;
+            }
+        }
 	}
 
 
@@ -161,9 +188,9 @@ bool Controller::Update(float velX, float velY, float velYaw,bool Hop,bool restr
 	clock_t time = clock();
 	float dt = (float)(time - m_time)/CLOCKS_PER_SEC;
 	m_time = time;
-	_updateVel(dt);
-
-	m_planner.SetVelocity(m_outVel[X], m_outVel[Y], m_outVel[R]);
+	_updateVel(velX,velY,velYaw,dt);
+    //printf("x:%f,y:%f,r:%f\n",m_outVel[Y], m_outVel[X], m_outVel[R]);
+	m_planner.SetVelocity(m_outVel[Y], m_outVel[X], m_outVel[R]);
 	LegController::CtrlParam param;
 	bool status = m_planner.Update(dt, m_pos, m_touchStatus);
 
@@ -227,6 +254,7 @@ bool Controller::Update(float velX, float velY, float velYaw,bool Hop,bool restr
 
 void Controller::StartMoving()
 {
+    //printf("sm\n");
 	m_time = -1;
 	m_planner.Reset();
 	m_stop = false;
@@ -258,7 +286,7 @@ PacePlanner& Controller::GetPacePlanner()
 
 void Controller::_doHop()
 {
-printf("start Hop\n");
+//printf("start Hop\n");
 
 	const float leanTime = 5.0f,hopTime = 3.0f,hopbackTime = 3.0f,restTime = 3.0f;
 	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41,exp_y2 = -10,exp_z2 = -31;
@@ -399,7 +427,7 @@ printf("start Hop\n");
     }
 
     m_time = -1;
-    //printf("end\n");
+    //printf("end hop\n");
 }
 
 

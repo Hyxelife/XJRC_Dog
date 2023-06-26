@@ -1,26 +1,30 @@
 #include "Console.h"
 #include <stdio.h>
 #include <math.h>
-#include <linux/input.h
+#include <linux/input.h>
+#include <unistd.h>
+#include <fcntl.h>
 
 ////////////key masks///////////////
 #define MASK_A  0x01
-#define MASK_S  0x02   
-#define MASK_D  0x04 
-#define MASK_Q  0x08 
-#define MASK_W  0x10 
-#define MASK_E  0x20 
+#define MASK_S  0x02
+#define MASK_D  0x04
+#define MASK_Q  0x08
+#define MASK_W  0x10
+#define MASK_E  0x20
 #define MASK_QUIT  0x40
 #define MASK_HOP  0x80
-#define MASK_STAND  0x100   
+#define MASK_STAND  0x100
 
-int Console::_updateKeyEvents()
+void Console::_updateKeyEvents()
 {
-    struct input_event key_info;
-
-    if(read(m_eventFd,&key_info,sizeof(input_event)))
+    input_event key_info;
+    //m_event.read((char*)&key_info,sizeof(key_info));
+    if(read(m_eventFd,&key_info,sizeof(input_event)) > 0)
     {
-        unsigned char mask = 0;
+        //printf("event\n");
+        if(key_info.type != EV_KEY)return;
+        unsigned int mask = 0;
         switch(key_info.code)
         {
             case KEY_A:mask = MASK_A;break;
@@ -35,19 +39,25 @@ int Console::_updateKeyEvents()
         }
         if(!mask)return;
         if(key_info.value == 0)
+        {
+            //printf("key up\n");
             m_keyMask &= ~mask;
+        }
         else if(key_info.value == 1 || key_info.value == 2)
+        {
+            //printf("key pressed!\n");
             m_keyMask |= mask;
+            }
     }
 }
 
-void Console::outstatus()
-{
+//void Console::outstatus()
+//{
     //printf("n_mannual:%d,mannual:%d\nn_auto:%d,auto:%d\nn_stop:%d,stop:%d\nn_quit:%d,quit:%d\nctrl[%.3f,%.3f,%.3f]\nout[%.3f%.3f%.3f]\nerr_his[%.3f,%.3f,%.3f]\n\
     inc[%.3f,%.3f,%.3f]"
     //,m_need_mannual,m_mannual,m_need_auto,m_auto,m_need_stop,m_stop,m_need_quit,m_quit,m_ctrl_x,m_ctrl_y,m_ctrl_r,m_out_x,m_out_y,m_out_r,
     //m_his_x,m_his_y,m_his_r,m_inc_x,m_inc_y,m_inc_r);
-}
+//}
 
 void* Console::consoleFunc(void* arg)
 {
@@ -63,9 +73,11 @@ void Console::_console()
     {
         if(m_status.mannaul)
         {
+            //printf("mannual\n");
             if(!m_expStatus.mannaul)
             {
-                printf("waiting to exit mannual mode...\n");
+                if(!m_prop)
+                printf("waiting to exit mannual mode...\n"),m_prop = true;
                 continue;
             }
             _updateKeyEvents();
@@ -73,36 +85,42 @@ void Console::_console()
                 m_request.x = 0;
             else if(m_keyMask & MASK_D) m_request.x = 1;
             else if(m_keyMask & MASK_A) m_request.x = -1;
+            else m_request.x = 0;
 
             if(m_keyMask & MASK_W && m_keyMask & MASK_S)
-                m_request.x = 0;
+                m_request.y = 0;
             else if(m_keyMask & MASK_W) m_request.y = 1;
             else if(m_keyMask & MASK_S) m_request.y = -1;
+            else m_request.y = 0;
 
             if(m_keyMask & MASK_E && m_keyMask & MASK_Q)
-                m_request.x = 0;
+                m_request.r = 0;
             else if(m_keyMask & MASK_E) m_request.r = -1;
-            else if(m_keyMask & MASK_Q) m_request.r = 1; 
+            else if(m_keyMask & MASK_Q) m_request.r = 1;
+            else m_request.r = 0;
 
             if(m_keyMask & MASK_HOP)
                 m_request.reqHop = true;
-            else m_request.reqHop = false;
+
             if(m_keyMask & MASK_STAND)
                 m_request.reqStop = true;
-            else m_request.reqStop = false;
-            
+
             if(m_keyMask & MASK_QUIT)
             {
                 m_request.reqStop = true;
                 m_expStatus.mannaul = false;
+                m_expStatus.auto_ = false;
+                m_expStatus.quit = false;
+                m_keyMask = 0;
             }
-            else m_request.reqStop = false;
+            //printf("\nmask:%d\n",m_keyMask);
 
         }else if(m_status.auto_)
         {
             if(!m_expStatus.auto_)
             {
-                printf("waiting to exit auto mode...\n");
+                if(!m_prop)
+                printf("waiting to exit auto mode...\n"),m_prop = true;
                 continue;
             }
             scanf("%c",&cmd);
@@ -113,19 +131,21 @@ void Console::_console()
                 {
                     m_request.reqStop = true;
                     m_expStatus.mannaul = false;
+
                 }break;
             }
         }else
         {
             if(m_expStatus.auto_ || m_expStatus.mannaul)
             {
-                printf("waiting to change mode...\n");
-                continue; 
+                if(!m_prop)
+                    printf("waiting to change mode...\n"),m_prop = true;
+                continue;
             }
             if(m_expStatus.quit)
             {
                 printf("waiting to quit...\n");
-                continue;                 
+                continue;
             }
             scanf("%c",&cmd);
             switch(cmd)
@@ -174,19 +194,22 @@ void Console::_console()
 
 Console::Console(const char* strKeyEvent)
 {
-    m_eventFd = open(strKeyEvent,O_RDONLY);
+    m_eventFd = open(strKeyEvent,O_RDONLY,0777);
     if(m_eventFd < 0)
     {
         printf("[Console]:cannot open event device\n");
         return;
     }
+    //m_event.open(strKeyEvent);
+
 
     m_threadQuit = true;
     m_request.r = m_request.x = m_request.y = 0;
     m_request.reqHop = m_request.reqStop = false;
     m_status.auto_ = m_status.mannaul =m_status.quit= false;
-    m_expStatus.auto_ = m_expStatus.mannaul =m_status.quit= false;
+    m_expStatus.auto_ = m_expStatus.mannaul =m_expStatus.quit= false;
     m_keyMask = 0;
+    m_prop = false;
 }
 
 void Console::Start()
@@ -211,7 +234,13 @@ void Console::UpdateEvent(bool ctrlStop)
 {
     if(ctrlStop)
     {
+        //printf("stop\n");
+        if(m_status.auto_ != m_expStatus.auto_ || m_status.mannaul != m_expStatus.mannaul || m_status.quit != m_expStatus.quit)
+        {
         m_status = m_expStatus;
-    }else
-        m_request.reqHop = m_request.reqStop = false;
+        printf("[Console]:mode changed!\n");
+        printf("mannaul:%d,auto:%d,quit:%d\n",m_status.mannaul,m_status.auto_,m_status.quit);
+        m_prop = false;
+        }
+    }
 }

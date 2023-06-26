@@ -37,6 +37,7 @@ void LegController::_updateParam(LegController::CtrlParam& currentParam,
 
 void LegController::_doStartUp()
 {
+    if(m_ctrlParam.ctrlMask & feetPos == 0){while(1){printf("[LegController]:start up without an initial position!\n");}}
     clock_t start = clock(), end = start;
     float progress = 0;
     AxisMovement initAngle = m_motors.GetCurrentMotorAngle();

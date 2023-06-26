@@ -10,7 +10,7 @@ int main()
 {
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
-    Console con(0.5,5,1e-2);
+    Console con("/dev/input/event4");
 
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
@@ -21,6 +21,7 @@ int main()
         AxisMovement(1.7986,1.53974,0.101243),
 
         },
+
         {
             //AxisMovement(DEG(90),DEG(90),DEG(90)),
             AxisMovement(DEG(23.66),DEG(180-21.45),DEG(18.95)),
@@ -48,22 +49,26 @@ int main()
     cout<<"[main]:params ready!starting up ..."<<endl;
 
     controller.Start(3.0f);
-    controller.Update(0,0,0);
     cout<<"[main]:finish start up procedure!"<<endl;
-    
+
     cout<<"[main]:start loop"<<endl;
     con.Start();
     Console::ConsoleRequest req;
     Console::ConsoleStatus status;
-
+    //while(1);
     bool sysQuit = false;
     while(!sysQuit)
     {
         con.GetConsoleRequest(req);
         con.GetConsoleStatus(status);
         controller.Update(req.x,req.y,req.r,req.reqHop,true);
-        if(req.reqStop)controller.StopMoving();
-        con.Update(!controller.IsMoving());
+        //printf("update\n");
+        if(req.reqStop)
+        {
+            controller.StopMoving();
+            //printf("req stop\n");
+            }
+        con.UpdateEvent(controller.IsStop());
         sysQuit = status.quit;
 
     }

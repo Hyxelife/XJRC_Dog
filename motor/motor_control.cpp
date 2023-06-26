@@ -87,8 +87,8 @@ MOTOR_send motor_run;
     //cout<<"position"<<endl;
     // encode data into motor commands
     modify_data(&motor_run);
-    serial.sendRecv(&motor_run, &motor_r);
-    extract_data(&motor_r);
+    //serial.sendRecv(&motor_run, &motor_r);
+    //extract_data(&motor_r);
     //if(Motor_id == 2)
     //cout<<"leg:"<<Motor_id<<",position:"<<Position<<endl;
     //usleep(100000);

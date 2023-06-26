@@ -36,27 +36,33 @@ void LegMotors::_checkPos(float shoulderPos,float armPos,float feetPos)
     if(deltaAngle >= safetyAngle)
         SAFE_TRAP("[LegMotor]:3电机控制角度相差过大!",deltaAngle);
 }
-void LegMotors::_checkRange(float shoudlerAngle,float armAngle,float feetAngle)
+void LegMotors::_checkRange(float shoulderAngle,float armAngle,float feetAngle)
 {
     const float safetyShoulder[2] = {DEG(-40),DEG(40)};
     const float safetyArm[2] = {DEG(30),DEG(240)};
     const float safetyFeet[2] = {DEG(15),DEG(140)};
     while(!ms_systemSafe);
 
-    if(shoudlerAngle < safetyShoulder[0])
-        SAFE_TRAP("[LegMotor]:shoudler angle, too small!",shoudlerAngle);
-    if(shoudlerAngle > safetyShoulder[1])
-        SAFE_TRAP("[LegMotor]:shoudler angle, too large!",shoudlerAngle);
+    if(shoulderAngle < safetyShoulder[0])
+        SAFE_TRAP("[LegMotor]:shoudler angle, too small!",shoulderAngle);
+    if(shoulderAngle > safetyShoulder[1])
+        SAFE_TRAP("[LegMotor]:shoudler angle, too large!",shoulderAngle);
+    if(!(shoulderAngle > safetyShoulder[0] && shoulderAngle < safetyShoulder[1]))
+        SAFE_TRAP("[LegMotor]:shoudler angle!",shoulderAngle);
 
     if(armAngle < safetyArm[0])
         SAFE_TRAP("[LegMotor]:arm angle, too small!",armAngle);
     if(armAngle > safetyArm[1])
         SAFE_TRAP("[LegMotor]:arm angle, too large!",armAngle);
+    if(!(armAngle < safetyArm[0] && armAngle > safetyArm[1]))
+        SAFE_TRAP("[LegMotor]:arm angle!",armAngle);
 
     if(feetAngle < safetyFeet[0])
         SAFE_TRAP("[LegMotor]:feet angle, too small!",feetAngle);
     if(feetAngle > safetyFeet[1])
         SAFE_TRAP("[LegMotor]:feet angle, too large!",feetAngle);
+    if(!(feetAngle < safetyFeet[0] && feetAngle > safetyFeet[1]))
+        SAFE_TRAP("[LegMotor]:feet angle!",feetAngle);
 }
 
 LegMotors::LegMotors(AxisMovement zeroPos,std::vector<float> motorSign,float motorScalar,std::string portName)
@@ -96,19 +102,22 @@ m_params(0.2,6)
 
 void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInterAngle)
 {
-    // static int step = 0;
-    // step++;
-    // if (step % 300000 != 0)return;
+    static int step = 0;
+    step++;
+    //if (step % 300000 != 0)return;
     // WaitForSingleObject(log_mutex, INFINITE);
-     //stringstream formater;
-     //formater <<m_name<<" "<< RAD(shoulderAngle) << "," << RAD(armAngle) << "," << RAD(armFeetInterAngle) << endl;
-     //string str = formater.str();
+     stringstream formater;
+     formater <<m_name<<" "<< RAD(shoulderAngle) << "," << RAD(armAngle) << "," << RAD(armFeetInterAngle) << endl;
+     string str = formater.str();
     // file.write(str.c_str(),str.size());
     // file.flush();
     // ReleaseMutex(log_mutex);
-    //cout << "position control:\n"<< str;
-    //   usleep(100000);
-    //return;
+    if(step == 10000)
+    cout << "position control:\n"<< str,step = 0;
+       //usleep(10000);
+           _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
+    _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+    return;
     _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
     _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
     MOTOR_recv recv;

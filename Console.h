@@ -1,4 +1,5 @@
 #include "MultiThread.h"
+#include <fstream>
 
 class Console
 {
@@ -30,7 +31,7 @@ class Console
 
     void UpdateEvent(bool ctrlStop);
 
-    void GetConsoleRequest(ConsoleRequest& request){request = m_request;}
+    void GetConsoleRequest(ConsoleRequest& request){request = m_request;m_request.reqHop = m_request.reqStop = false;}
     void GetConsoleStatus(ConsoleStatus& status){status = m_status;}
 
     protected:
@@ -40,6 +41,7 @@ class Console
     ConsoleStatus m_status;
     ConsoleStatus m_expStatus;
     ConsoleRequest m_request;
-
+    bool m_prop;
     bool m_threadQuit;
+    std::ifstream m_event;
 };
