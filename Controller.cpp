@@ -1,9 +1,9 @@
 #include "Controller.h"
 #include<iostream>
+#include "Debug.h"
 using  namespace std;
-#define DEBUG_MODE
 
-#define STOP_LEG    0
+#define DEBUG_MODE
 #ifdef DEBUG_MODE
 const bool enableMap[4] = {true,false,false,false};
 #endif // DEBUG_MODE
@@ -22,7 +22,7 @@ Controller::Controller(
 	std::vector<std::vector<float>> motorSign,
 	LegController::VMCParam param,
 	CtrlInitParam initParam,MechParam mcParam)
-	:m_planner(initParam.maxVelFw,initParam.maxVelVt,initParam.maxVelRt,mcParam.dogWidth,mcParam.dogLength),
+	:m_planner(initParam.maxVelFw,initParam.maxVelVt,mcParam.dogWidth,mcParam.dogLength,initParam.maxVelRt),
 	m_pos(4,FeetMovement(0,0,0)),
 	m_touchStatus(4,true),
 	m_kp(initParam.kp),m_kw(initParam.kw),
@@ -167,7 +167,12 @@ bool Controller::Update(float velX, float velY, float velYaw,bool Hop,bool restr
 
 	if(m_stop)
 	{
-		if(m_needHop || Hop){_doHop();m_needHop =false;}
+		if(m_needHop || Hop)
+		{
+			_doHop();
+			m_needHop =false;
+			return true;
+		}
 		if(velX != 0 || velY != 0 || velYaw != 0)StartMoving();
 		else return false;
 	}else
@@ -427,7 +432,8 @@ void Controller::_doHop()
     }
 
     m_time = -1;
-    //printf("end hop\n");
+	m_planner.Reset();
+    printf("end hop\n");
 }
 
 

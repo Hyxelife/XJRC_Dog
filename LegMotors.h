@@ -17,7 +17,7 @@ public:
     static float GetMotorScalar() { return ms_motorScalar; }
     static void MotorInitCheck();
 public:
-    LegMotors(AxisMovement zeroPos,std::vector<float> motorSign,float motorScalar,std::string portName);
+    LegMotors(AxisMovement zeroPos,std::vector<float> motorSign,float motorScalar,std::string portName,int id);
 
     void PositionCtrl(float shoulderAngle,float armAngle,float armFeetInterAngle);
     void TorqueCtrl(float shoulderTorque,float armTorque,float armFeetInterTorque);
@@ -42,4 +42,5 @@ protected:
     static bool ms_systemSafe;
     std::string m_name;
     MotorParams m_params;
+    int m_id;
 };

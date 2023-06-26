@@ -1,103 +1,61 @@
 #include "AutoControl.h"
 
-#define MSG_NULL        -1
-
-#define MSG_WAKE        0
-#define MSG_TURN        1
-#define MSG_ADJ_LEFT    2
-#define MSG_ADJ_RIGHT   3
-#define MSG_STOP        4
-#define MSG_HOP         5
-
-#define STA_STOP            0
-#define STA_SPD_START_RUN   1
-#define STA_SPD_TURN        2
-#define STA_SPD_FINAL       3
-
-
-#define STA_OBS_START       1
-#define STA_OBS_BRIDGE      2
-#define STA_OBS_BALANCE     3
-#define STA_OBS_STAIR           4
-#define STA_OBS_FINAL           5    
-#define STA_OBS_TURN            6   
-
-
-
-
-
-
-void* AutoCtrl::_threadFunc(void* p)
+AutoCtrl::AutoCtrl()
 {
-    AutoCtrl* pThis = (AutoCtrl*) p;
-    
-    //TODO: out layer [communication]
-    
-
-    return 0;
+    m_param.hop = false;
+    m_param.r = m_param.x = m_param.y = 0;
 }
-
-
-
-
-AutoCtrl::AutoCtrl(GameType type)
-:m_gameType(type)
-{
-    m_sysQuit = true;
-    m_process.status = 0;
-    m_process.stepCnt = 0;
-}   
 
 void AutoCtrl::UpdateStep()
 {
-    m_process.stepCnt++;
-    if(m_gameType == speed)
+    if(m_actions.empty())
     {
-        switch(m_process.status)
-        {
-            case STA_SPD_START_RUN:
-            case STA_SPD_TURN:
-            case STA_SPD_FINAL:
-        }
-    }else if(m_gameType == obstacle)
+        m_param.hop = false;
+        m_param.r = 0;
+        m_param.x = 0;
+        m_param.y = 0;
+    }else
     {
-        switch(m_process.status)
+        ActionType type = m_actions.front().action;
+        switch(type)
         {
-            case STA_OBS_START:
-            case STA_OBS_BRIDGE:
-            case STA_OBS_TURN:
-            case STA_OBS_BALANCE:
-            case STA_OBS_STAIR:
-            case STA_OBS_FINAL:
+            case run:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;}break;
+            case back:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = -1;}break;
+            case stop:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;}break;
+            case turnR:{m_param.hop = false;m_param.r = -1;m_param.x = 0;m_param.y = 0.5;}break;
+            case turnL:{m_param.hop = false;m_param.r = 1;m_param.x = 0;m_param.y = 0.5;}break;
+            case rotateR:{m_param.hop = false;m_param.r = 1;m_param.x = m_param.y = 0;}break;
+            case rotateL:{m_param.hop = false;m_param.r = 1;m_param.x = m_param.y = 0;}break;
+            case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;}break;
+            case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;}break;
+            case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;}break;
         }
+        m_actions.front().actionCnt--;
+        if(m_actions.front().actionCnt <= 0)m_actions.pop();
     }
 }
 
-void AutoCtrl::_speedCmp(int msgId)
+void AutoCtrl::AddAction(Action action)
 {
-
+    m_actions.push(action);
 }
 
-void AutoCtrl::_obstCmp(int msgId)
+void AutoCtrl::AddActions(std::vector<Action> actions)
 {
-
+    for(int i = 0;i<actions.size();++i)
+        this->m_actions.push(actions[i]);
 }
 
-void AutoCtrl::_sendMsg(int msgId)
+void AutoCtrl::ClearActions()
 {
-
+    while(!m_actions.empty())m_actions.pop();
+    m_param.hop = false;
+    m_param.r = 0;
+    m_param.x = 0;
+    m_param.y = 0;
 }
 
-void AutoCtrl::Start()
+bool AutoCtrl::IsEmpty()
 {
-    if(!m_sysQuit)return;
-    m_sysQuit = false;
-    thread_create(AutoCtrl::_threadFunc,this,m_threadDesc);
-}
-
-void AutoCtrl::Exit()
-{
-    m_sysQuit = true;
-    thread_join(m_threadDesc);
-    thread_destroy(m_threadDesc);
+    return m_actions.empty();
 }

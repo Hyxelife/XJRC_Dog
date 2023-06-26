@@ -1,5 +1,6 @@
 #include "MultiThread.h"
 #include <fstream>
+#include "AutoControl.h"
 
 class Console
 {
@@ -9,12 +10,17 @@ class Console
         bool auto_;
         bool mannaul;
         bool quit;
+        bool test;
     };
     struct ConsoleRequest
     {
         bool reqStop;
         bool reqHop;
         float x,y,r;
+    };
+    struct TestItem
+    {
+
     };
     protected:
     void _updateKeyEvents();
@@ -24,7 +30,7 @@ class Console
     void _console();
     void _outstatus();
     public:
-    Console(const char* strKeyEvent);
+    Console(const char* strKeyEvent,AutoCtrl* pCtrl);
     ~Console();
     void Start();
     void Exit();
@@ -44,4 +50,5 @@ class Console
     bool m_prop;
     bool m_threadQuit;
     std::ifstream m_event;
+    AutoCtrl* m_pCtrl;
 };

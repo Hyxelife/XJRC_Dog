@@ -198,7 +198,7 @@ LegController::LegController(
     std::string serialName,
     AxisMovement zeroAngle,
     std::vector<float> motorSign):
-        m_motors(zeroAngle,motorSign,9.1f,serialName),
+        m_motors(zeroAngle,motorSign,9.1f,serialName,legId),
         m_vmcParam(vmcParam),
         m_solver(__isRight(legId), LegStructure::theStruct),
         m_updateTime(-1),

@@ -1,42 +1,46 @@
 #include "fcntl.h"
 #include "MultiThread.h"
+#include <queue>
 
 
 class AutoCtrl
 {
-    struct AutoProcess
+    public:
+    enum ActionType
     {
-        int stepCnt;
-        int status;  
+        run,
+        back,
+        stop,
+        turnR,
+        turnL,
+        rotateR,
+        rotateL,
+        moveR,
+        moveL,
+        hop,
+    };
+    struct Action
+    {
+        int actionCnt;
+        ActionType action;  
     };
 public:
-    enum GameType
-    {
-        speed,
-        obstacle
-    };
+
     struct AutoCtrlParam
     {
-        float x,float y,float r;
+        float x,y,r;
         bool hop;
     };
-    protected:
-    static void* _threadFunc(void* p);
 
-    void _speedCmp(int msgId);
-    void _obstCmp(int msgId);
-    void _sendMsg(int msgId);
 public:
-    void Start();
-    void Exit();
-    AutoCtrl(GameType type);
+    AutoCtrl();
     void UpdateStep();
-    void GetAutoCtrlParam(AutoCtrlParam& param);
-
+    void GetAutoCtrlParam(AutoCtrlParam& param){param = m_param;}
+    void AddAction(Action action);
+    void AddActions(std::vector<Action> actions);
+    void ClearActions();
+    bool IsEmpty();
     protected:
-    GameType m_gameType;
     AutoCtrlParam m_param;
-    THREAD m_threadDesc;
-    bool m_sysQuit;
-    AutoProcess m_process;
+    std::queue<Action> m_actions;
 };

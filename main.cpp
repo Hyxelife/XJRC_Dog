@@ -3,16 +3,20 @@
 #include "Console.h"
 #include "Controller.h"
 #include "AutoControl.h"
+#include "Connector.h"
+#include "Debug.h"
 using namespace std;
 
 #define DEG(deg)    (deg)/180.0f*3.141592653589f
 //printf
 int main()
 {
+    Debug::Initialize("./log/record.txt","./log/log.txt","./simluator/pipe.txt");
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     Console con("/dev/input/event4");
     AutoCtrl autoCtrl;
+    Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
@@ -38,34 +42,48 @@ int main()
         },
         LegController::VMCParam(),
         Controller::CtrlInitParam(0.5,5,9,9,0.3,0.01),
-        Controller::MechParam(41,15+9.41f+9.41f)
+        Controller::MechParam(15+9.41f+9.41f,41)
     );
-    cout<<"[main]:system ready!"<<endl;
+
+    OUT("[main]:system ready!\n");
+
+
+
+
     PacePlanner& planner = controller.GetPacePlanner();
     planner.SetCurveHeight(9.0);
     planner.SetDogHeight(30.0f);
     planner.SetDogOffsetX(9.41f);
     planner.SetGait(Gait::Pace(0.6f,0.08f),0);
     controller.EnableVMC(false);
-    cout<<"[main]:params ready!starting up ..."<<endl;
+    OUT("[main]:params ready!starting up ...\n");
 
     controller.Start(3.0f);
-    cout<<"[main]:finish start up procedure!"<<endl;
+    OUT("[main]:finish start up procedure!");
 
-    cout<<"[main]:start loop"<<endl;
+    OUT("[main]:start loop");
     con.Start();
     Console::ConsoleRequest req;
     Console::ConsoleStatus status;
     AutoCtrl::AutoCtrlParam autoPar;
     //while(1);
     bool sysQuit = false;
+    bool connectStart = false;
     while(!sysQuit)
     {
         con.GetConsoleRequest(req);
         con.GetConsoleStatus(status);
-        if(status.auto_)
+        if(status.auto_ || status.test)
         {
             //TODO
+            if(status.auto_)
+            {
+                if(!connectStart)
+                {
+                    connector.Start();
+                    connectStart = true;
+                }
+            }
             autoCtrl.GetAutoCtrlParam(autoPar);
             if(controller.Update(autoPar.x,autoPar.y,autoPar.r,autoPar.hop,true))
                 autoCtrl.UpdateStep();
@@ -81,13 +99,14 @@ int main()
         sysQuit = status.quit;
 
     }
-    printf("[main]:system quitting...\n");
+    OUT("[main]:system quitting...\n");
     controller.Exit();
-    printf("[main]:Controller quit!\n");
+    OUT("[main]:Controller quit!\n");
     autoCtrl.Exit();
-    printf("[Auto]:Auto controller quit!\n");
+    OUT("[Auto]:Auto controller quit!\n");
     con.Exit();
-    printf("[Console]:Console quit!\n");
-    printf("[main]:system quit!\n");
+    OUT("[Console]:Console quit!\n");
+    OUT("[main]:system quit!\n");
+    Debug::Exit();
     return 0;
 }

@@ -1,6 +1,7 @@
 ﻿#include "LegMotors.h"
 #include <iostream>
 #include <fstream>
+#include "Debug.h"
 using namespace std;
 //void __init();
 
@@ -102,21 +103,24 @@ m_params(0.2,6)
 
 void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInterAngle)
 {
-    static int step = 0;
-    step++;
+    //static int step = 0;
+    //step++;
     //if (step % 300000 != 0)return;
     // WaitForSingleObject(log_mutex, INFINITE);
-     stringstream formater;
-     formater <<m_name<<" "<< RAD(shoulderAngle) << "," << RAD(armAngle) << "," << RAD(armFeetInterAngle) << endl;
-     string str = formater.str();
+     //stringstream formater;
+     //formater <<m_name<<" "<< RAD(shoulderAngle) << "," << RAD(armAngle) << "," << RAD(armFeetInterAngle) << endl;
+     //string str = formater.str();
     // file.write(str.c_str(),str.size());
     // file.flush();
     // ReleaseMutex(log_mutex);
-    if(step == 10000)
-    cout << "position control:\n"<< str,step = 0;
+    //if(step == 10000)
+    //cout << "position control:\n"<< str,step = 0;
        //usleep(10000);
-           _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
+    _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
     _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+
+    Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
+
     return;
     _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
     _checkRange(shoulderAngle, armAngle, armFeetInterAngle);

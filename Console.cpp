@@ -134,6 +134,13 @@ void Console::_console()
 
                 }break;
             }
+        }else if(m_status.test)
+        {
+            scanf("%c",&cmd);
+            switch(cmd)
+            {
+                
+            }
         }else
         {
             if(m_expStatus.auto_ || m_expStatus.mannaul)
@@ -159,6 +166,7 @@ void Console::_console()
                     printf("[h/H] help page\n");
                     printf("[m/M] mannually control\n");
                     printf("[a/A] automatically control\n");
+                    printf("[t/T] automatic test\n");
                     printf("[x/X] quit system\n");
                     printf("when system is mannually controlling:\n");
                     printf("\t[w/a/s/d] moving control\n");
@@ -167,6 +175,14 @@ void Console::_console()
                     printf("\t[p] quit control\n");
                     printf("when system is automatically controlling:\n");
                     printf("\t[q] quit\n");
+                    printf("when system is in automatic test:\n");
+                    printf("\t[s{cnt}}] start up and move {cnt} steps\n");
+                    printf("\t[r{cnt}] rotate {cnt} loops\n");
+                    printf("\t[m{cnt1},{cnt2},{cnt3}] start up ,move {cnt1} steps, turn {cnt2} loops, run{cnt3} steps\n");
+                    printf("\t[k{cnt1}] hop and move {cnt} steps\n");
+                    printf("\t[h] hop once\n");
+                    printf("\t[q] quit\n");
+                    
                 }break;
                 case 'm':
                 case 'M':
@@ -186,6 +202,12 @@ void Console::_console()
                     m_request.reqStop = true;
                     m_expStatus.quit = true;
                 }break;
+                case 't':
+                case 'T':
+                {
+                    m_request.reqStop = true;
+                    m_expStatus.test = true;
+                }
             }
         }
     }
@@ -206,8 +228,8 @@ Console::Console(const char* strKeyEvent)
     m_threadQuit = true;
     m_request.r = m_request.x = m_request.y = 0;
     m_request.reqHop = m_request.reqStop = false;
-    m_status.auto_ = m_status.mannaul =m_status.quit= false;
-    m_expStatus.auto_ = m_expStatus.mannaul =m_expStatus.quit= false;
+    m_status.auto_ = m_status.mannaul =m_status.quit = m_status.test= false;
+    m_expStatus.auto_ = m_expStatus.mannaul =m_expStatus.quit= m_expStatus.test= false;
     m_keyMask = 0;
     m_prop = false;
 }
@@ -235,11 +257,14 @@ void Console::UpdateEvent(bool ctrlStop)
     if(ctrlStop)
     {
         //printf("stop\n");
-        if(m_status.auto_ != m_expStatus.auto_ || m_status.mannaul != m_expStatus.mannaul || m_status.quit != m_expStatus.quit)
+        if(m_status.auto_ != m_expStatus.auto_ ||
+         m_status.mannaul != m_expStatus.mannaul ||
+          m_status.quit != m_expStatus.quit ||
+          m_status.test != m_expStatus.test)
         {
         m_status = m_expStatus;
         printf("[Console]:mode changed!\n");
-        printf("mannaul:%d,auto:%d,quit:%d\n",m_status.mannaul,m_status.auto_,m_status.quit);
+        printf("mannaul:%d,auto:%d,test:%d,quit:%d\n",m_status.mannaul,m_status.auto_,m_status.test,m_status.quit);
         m_prop = false;
         }
     }
