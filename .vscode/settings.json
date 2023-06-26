@@ -2,6 +2,10 @@
     "files.associations": {
         "ratio": "cpp",
         "alignedvector3": "cpp",
-        "*.tcc": "cpp"
+        "*.tcc": "cpp",
+        "string": "cpp",
+        "ostream": "cpp",
+        "eigen": "cpp",
+        "iostream": "cpp"
     }
 }

@@ -1,29 +1,44 @@
 #include "Console.h"
 #include <stdio.h>
 #include <math.h>
+#include <linux/input.h
 
+////////////key masks///////////////
+#define MASK_A  0x01
+#define MASK_S  0x02   
+#define MASK_D  0x04 
+#define MASK_Q  0x08 
+#define MASK_W  0x10 
+#define MASK_E  0x20 
+#define MASK_QUIT  0x40
+#define MASK_HOP  0x80
+#define MASK_STAND  0x100   
 
-int Console::getch_(void)
+int Console::_updateKeyEvents()
 {
-     struct termios tm, tm_old;
-     int fd = 0, ch;
+    struct input_event key_info;
 
-     if (tcgetattr(fd, &tm) < 0) {//保存现在的终端设置
-          return -1;
-     }
-
-     tm_old = tm;
-     cfmakeraw(&tm);//更改终端设置为原始模式，该模式下所有的输入数据以字节为单位被处理
-     if (tcsetattr(fd, TCSANOW, &tm) < 0) {//设置上更改之后的设置
-          return -1;
-     }
-
-     ch = getchar();
-     if (tcsetattr(fd, TCSANOW, &tm_old) < 0) {//更改设置为最初的样子
-          return -1;
-     }
-
-     return ch;
+    if(read(m_eventFd,&key_info,sizeof(input_event)))
+    {
+        unsigned char mask = 0;
+        switch(key_info.code)
+        {
+            case KEY_A:mask = MASK_A;break;
+            case KEY_S:mask = MASK_S;break;
+            case KEY_D:mask = MASK_D;break;
+            case KEY_Q:mask = MASK_Q;break;
+            case KEY_W:mask = MASK_W;break;
+            case KEY_E:mask = MASK_E;break;
+            case KEY_SPACE:mask = MASK_HOP;break;
+            case KEY_P:mask = MASK_QUIT;break;
+            case KEY_F:mask = MASK_STAND;break;
+        }
+        if(!mask)return;
+        if(key_info.value == 0)
+            m_keyMask &= ~mask;
+        else if(key_info.value == 1 || key_info.value == 2)
+            m_keyMask |= mask;
+    }
 }
 
 void Console::outstatus()
@@ -38,56 +53,80 @@ void* Console::consoleFunc(void* arg)
 {
     Console* pThis = (Console*)arg;
     printf("[Console]:start up!\n");
-    pThis->console_();
+    pThis->_console();
 }
 
-#define CTRL_TIME   0.5f
-
-#define ID_W      0
-#define ID_A      1
-#define ID_S      2
-#define ID_D      3
-#define ID_Q      4
-#define ID_E      5
-
-void Console::console_()
+void Console::_console()
 {
     char cmd;
     while(!m_threadQuit)
     {
-        if(m_mannual)
+        if(m_status.mannaul)
         {
-            cmd = getch_();
-            printf("get:%c\n",cmd);
-            outstatus();
-            if(m_need_mannual == 0 || m_need_stop == 1)continue;
-            mutex_lock(m_mutexDesc);
-
-            switch(cmd)
+            if(!m_expStatus.mannaul)
             {
-                case 'q':m_ctrl_r = 1;m_ctrlTime[ID_Q] = CTRL_TIME;m_need_stop = 0;break;
-                case 'e':m_ctrl_r = -1;m_ctrlTime[ID_E] = CTRL_TIME;m_need_stop = 0;break;
-                case 'w':m_ctrl_y = 1;m_ctrlTime[ID_W] = CTRL_TIME;m_need_stop = 0;break;
-                case 'a':m_ctrl_x = -1;m_ctrlTime[ID_A] = CTRL_TIME;m_need_stop = 0;break;
-                case 's':m_ctrl_y = -1;m_ctrlTime[ID_S] = CTRL_TIME;m_need_stop = 0;break;
-                case 'd':m_ctrl_x = 1;m_ctrlTime[ID_D] = CTRL_TIME;m_need_stop = 0;break;
-                case 'f':m_need_stop = 1;break;
-                case 'x':outstatus();break;
-                case ' ':m_need_stop = 1;m_need_hop = 1;break;
-                case 'p':m_need_mannual = 0;m_ctrl_x = m_ctrl_y = m_ctrl_r = 0;break;
+                printf("waiting to exit mannual mode...\n");
+                continue;
             }
-            mutex_unlock(m_mutexDesc);
-        }else if(m_auto)
+            _updateKeyEvents();
+            if(m_keyMask & MASK_A && m_keyMask & MASK_D)
+                m_request.x = 0;
+            else if(m_keyMask & MASK_D) m_request.x = 1;
+            else if(m_keyMask & MASK_A) m_request.x = -1;
+
+            if(m_keyMask & MASK_W && m_keyMask & MASK_S)
+                m_request.x = 0;
+            else if(m_keyMask & MASK_W) m_request.y = 1;
+            else if(m_keyMask & MASK_S) m_request.y = -1;
+
+            if(m_keyMask & MASK_E && m_keyMask & MASK_Q)
+                m_request.x = 0;
+            else if(m_keyMask & MASK_E) m_request.r = -1;
+            else if(m_keyMask & MASK_Q) m_request.r = 1; 
+
+            if(m_keyMask & MASK_HOP)
+                m_request.reqHop = true;
+            else m_request.reqHop = false;
+            if(m_keyMask & MASK_STAND)
+                m_request.reqStop = true;
+            else m_request.reqStop = false;
+            
+            if(m_keyMask & MASK_QUIT)
+            {
+                m_request.reqStop = true;
+                m_expStatus.mannaul = false;
+            }
+            else m_request.reqStop = false;
+
+        }else if(m_status.auto_)
         {
+            if(!m_expStatus.auto_)
+            {
+                printf("waiting to exit auto mode...\n");
+                continue;
+            }
             scanf("%c",&cmd);
-            if(m_need_auto == 0)continue;
             switch(cmd)
             {
                 case 'Q':
-                case 'q':m_need_auto = 0;break;
+                case 'q':
+                {
+                    m_request.reqStop = true;
+                    m_expStatus.mannaul = false;
+                }break;
             }
         }else
         {
+            if(m_expStatus.auto_ || m_expStatus.mannaul)
+            {
+                printf("waiting to change mode...\n");
+                continue; 
+            }
+            if(m_expStatus.quit)
+            {
+                printf("waiting to quit...\n");
+                continue;                 
+            }
             scanf("%c",&cmd);
             switch(cmd)
             {
@@ -101,7 +140,6 @@ void Console::console_()
                     printf("[m/M] mannually control\n");
                     printf("[a/A] automatically control\n");
                     printf("[x/X] quit system\n");
-                    printf("[b/B] abort system\n");
                     printf("when system is mannually controlling:\n");
                     printf("\t[w/a/s/d] moving control\n");
                     printf("\t[q/e] rotating control\n");
@@ -111,39 +149,44 @@ void Console::console_()
                     printf("\t[q] quit\n");
                 }break;
                 case 'm':
-                case 'M':m_need_mannual = 1;m_need_stop = 0;break;
+                case 'M':
+                {
+                    m_request.reqStop = true;
+                    m_expStatus.mannaul = true;
+                }break;
                 case 'a':
-                case 'A':m_need_auto = 1;break;
+                case 'A':
+                {
+                    m_expStatus.auto_ = true;
+                    m_request.reqStop = true;
+                }break;
                 case 'q':
-                case 'Q':m_need_quit = 1;break;
-                case 'b':
-                case 'B':m_quit = true;m_stop = true;break;
+                case 'Q':
+                {
+                    m_request.reqStop = true;
+                    m_expStatus.quit = true;
+                }break;
             }
         }
-        while(!m_quit && (m_need_mannual != -1 || m_need_auto != -1 || m_need_quit != -1)){printf("blocking...\n");outstatus();}
     }
     printf("[Console]:system quit!\n");
 }
 
-Console::Console(float kp,float kw,float zerosThres)
-:m_kp(kp),m_kw(kw)
+Console::Console(const char* strKeyEvent)
 {
-    m_lastUpdateTime = -1;
-    m_auto = false;
-    m_mannual = false;
-    m_stop = true;
-    m_quit = false;
-
-    m_need_hop = m_need_mannual = m_need_auto = m_need_stop = m_need_quit = -1;
+    m_eventFd = open(strKeyEvent,O_RDONLY);
+    if(m_eventFd < 0)
+    {
+        printf("[Console]:cannot open event device\n");
+        return;
+    }
 
     m_threadQuit = true;
-    m_zeroThres = zerosThres;
-    m_ctrl_x = m_ctrl_y = m_ctrl_r =
-    m_out_x = m_out_y = m_out_r =
-    m_his_r = m_his_x  =m_his_y =
-    m_inc_x = m_inc_y = m_inc_r =
-    m_out_r = m_out_x = m_out_y = 0;
-    mutex_create(m_mutexDesc);
+    m_request.r = m_request.x = m_request.y = 0;
+    m_request.reqHop = m_request.reqStop = false;
+    m_status.auto_ = m_status.mannaul =m_status.quit= false;
+    m_expStatus.auto_ = m_expStatus.mannaul =m_status.quit= false;
+    m_keyMask = 0;
 }
 
 void Console::Start()
@@ -151,7 +194,6 @@ void Console::Start()
     if(!m_threadQuit)return;
     m_threadQuit = false;
     thread_create(Console::consoleFunc,this,m_threadDesc);
-
 }
 
 void Console::Exit()
@@ -163,135 +205,13 @@ void Console::Exit()
 
 Console::~Console()
 {
-    mutex_destroy(m_mutexDesc);
 }
 
-void Console::UpdateMannualParams(float& x,float& y,float& r)
+void Console::UpdateEvent(bool ctrlStop)
 {
-    if(!m_mannual){m_lastUpdateTime = -1;return;}
-    if(m_stop){m_lastUpdateTime = -1;return;}
-    if(m_lastUpdateTime == -1){m_lastUpdateTime = clock();return;}
-    clock_t curTime = clock();
-    float dt = curTime-m_lastUpdateTime;
-    m_lastUpdateTime = curTime;
-    dt /= (float)CLOCKS_PER_SEC;
-    mutex_lock(m_mutexDesc);
-    float err_x = m_ctrl_x - m_out_x,err_y = m_ctrl_y-m_out_y,err_r = m_ctrl_r-m_out_r;
-
-    for(int i = 0;i<6;++i)
+    if(ctrlStop)
     {
-        if(m_ctrlTime[i]<=0)continue;
-        m_ctrlTime[i]-=dt;
-        if(m_ctrlTime[i] <= 0)
-        {
-            switch (i)
-            {
-                case ID_W:
-                case ID_S:m_ctrl_y = 0;break;
-                case ID_A:
-                case ID_D:m_ctrl_x = 0;break;
-                case ID_E:
-                case ID_Q:m_ctrl_r = 0;break;
-            }
-            m_ctrlTime[i] = 0;
-        }
-    }
-    mutex_unlock(m_mutexDesc);
-
-    m_inc_x += m_kp*err_x*dt+m_kw*(err_x-m_his_x);
-    m_inc_y += m_kp*err_y*dt+m_kw*(err_y-m_his_y);
-    m_inc_r += m_kp*err_r*dt+m_kw*(err_r-m_his_r);
-
-    m_out_x += m_inc_x*dt;
-    //printf("%.3f\n",dt*1000);
-    m_out_y += m_inc_y*dt;
-    m_out_r += m_inc_r*dt;
-    m_his_x = err_x;
-    m_his_y = err_y;
-    m_his_r = err_r;
-
-    x = m_out_x;
-    y = m_out_y;
-    r = m_out_r;
-}
-
-void Console::Update(bool stepOver)
-{
-    if(m_stop)
-    {
-        m_lastUpdateTime = -1;
-        if(m_need_stop == 0)
-        {
-            m_stop = false;
-            printf("[Console]:moving...\n");
-        }
-        m_need_stop = -1;
-
-        if(m_need_quit == 1)
-        {
-            m_quit =true;
-            printf("[Console]:quitting...\n");
-            m_need_quit = -1;
-        }
-        if(m_need_mannual != -1)
-        {
-            m_mannual = m_need_mannual;
-            if(m_mannual)
-                printf("[Console]:enter mannual mode!\n");
-            else
-                printf("[Console]:exit mannual mode!\n");
-            m_need_mannual = -1;
-        }
-        if(m_need_auto == 1)
-        {
-            m_auto = true;
-            printf("[Console]:enter auto mode!\n");
-            m_need_auto = -1;
-        }
-        if(m_need_hop != -1)
-        {
-            m_need_hop = -1;
-            m_doHop = true;
-            printf("[Console]:do hopping..........\nhop hop hop!!!\n");
-        }
-
-    }else if(stepOver)
-    {
-        if(fabsf(m_out_x) <= m_zeroThres && fabsf(m_out_y) <= m_zeroThres&& fabsf(m_out_r) <= m_zeroThres)
-        {
-            if(m_need_mannual == 0)
-            {
-                m_mannual = false;
-                m_stop = true;
-                printf("[Console]:exit mannual mode!\n");
-                m_need_mannual = -1;
-            }
-            if(m_need_auto == 0)
-            {
-                m_auto = false;
-                m_stop = true;
-                printf("[Console]:exit auto mode!\n");
-                m_need_auto = -1;
-            }
-            if(m_need_quit == 1)
-            {
-                m_stop = true;
-                m_quit = true;
-                printf("[Console]:quitting...\n");
-            }
-            if(m_need_stop == 1)
-            {
-                m_stop = true;
-                printf("[Console]:stopped!\n");
-                if(m_need_hop)
-                {
-                    m_need_hop = -1;
-                    m_doHop = true;
-                    printf("[Console]:do hopping..........\nhop hop hop!!!\n");
-                }
-                m_need_stop = -1;
-            }
-        }
-    }
-
+        m_status = m_expStatus;
+    }else
+        m_request.reqHop = m_request.reqStop = false;
 }

@@ -8,19 +8,34 @@ using  namespace std;
 const bool enableMap[4] = {true,true,true,true};
 #endif // DEBUG_MODE
 
+#define X	0
+#define Y	1
+#define R	2
 
+#define CLAMP(num,low,up)	{if(num > up)num = up;\
+							else if(num < low)num = low;}
 
 Controller::Controller(
     std::vector<std::string> serialName,
 	std::vector<AxisMovement> motorAngle,
 	std::vector<AxisMovement> realAngle,
 	std::vector<std::vector<float>> motorSign,
-	LegController::VMCParam param)
-	:m_planner(9,9,0.3,41,15+9.41f+9.41f),
+	LegController::VMCParam param,
+	CtrlInitParam initParam,MechParam mcParam)
+	:m_planner(initParam.maxVelFw,initParam.maxVelVt,initParam.maxVelRt,mcParam.dogWidth,mcParam.dogLength),
 	m_pos(4,FeetMovement(0,0,0)),
-	m_touchStatus(4,true)
+	m_touchStatus(4,true),
+	m_kp(initParam.kp),m_kw(initParam.kw),
+	m_movingThres(initParam.movingThreshold)
+	//m_usingGlobalRecord(initParam.usingGlobal)
 {
-m_time = -1;
+	m_maxVel[X] = initParam.maxVelFw;
+	m_maxVel[Y] = initParam.maxVelVt;
+	m_maxVel[R] = initParam.maxVelRt;
+
+	for(int i = 0;i<3;++i)
+		m_incVel[i] = m_hisVel[i] = [i] = 0;
+	m_time = -1;
 	AxisMovement angle;
 	float scalar = LegMotors::GetMotorScalar();
 	for (int i = 0; i < 4; ++i)
@@ -34,6 +49,7 @@ m_time = -1;
         #endif // DEBUG_MODE
             m_pControllers[i] = new LegController(param, i, serialName[i],angle,motorSign[i]);
 	}
+	m_smthCtrl = true;
 }
 
 Controller::~Controller()
@@ -69,6 +85,11 @@ void Controller::Start(float startUpTime)
 	}
 }
 
+void Controller::EnableSmoothCtrl(bool enable)
+{
+	m_smthCtrl = enable;
+}
+
 void Controller::Exit()
 {
 	for (int i = 0; i < 4; ++i)
@@ -80,36 +101,85 @@ void Controller::Exit()
 	}
 }
 
-void Controller::ClearControlHistory()
+void Controller::_updateVel(float x,float y,float r,float deltaTime)
 {
-	m_time = -1;
-	m_planner.Reset();
+	float ctrlVel[3] = {x*m_maxVel[X],y*m_maxVel[Y],r*m_maxVel[R]};
+    float err_x = ctrlVel[X] - m_outVel[X],err_y = ctrlVel[Y]-m_outVel[Y],err_r = ctrlVel[R]-m_outVel[R];
+
+	if(m_smthCtrl)
+	{
+		m_incVel[X] += m_kp*m_err*dt+m_kw*(err_x-m_hisVel[X]);
+		m_incVel[Y] += m_kp*err_y*dt+m_kw*(err_y-m_hisVel[Y]);
+		m_incVel[R] += m_kp*err_r*dt+m_kw*(err_r-m_hisVel[R]);
+
+		m_outVel[X] += m_incVel[X]*dt;
+		m_outVel[Y] += m_incVel[Y]*dt;
+		m_outVel[R] += m_incVel[R]*dt;
+
+		m_hisVel[X] = err_x;
+		m_hisVel[Y] = err_y;
+		m_hisVel[R] = err_r;
+	}else
+	{
+		m_outVel[X] = ctrlVel[X];
+		m_outVel[Y] = ctrlVel[Y];
+		m_outVel[R] = ctrlVel[R];
+	}
+	m_moving = fabsf(m_outVel[X])>m_movingThres ||
+				fabsf(m_outVel[Y])>m_movingThres ||
+				fabsf(m_outVel[R])>m_moving;
 }
 
-void Controller::ClearTime()
-{
-    m_time = -1;
-}
-
-#define CLAMP(num,low,up)	{if(num > up)num = up;\
-							else if(num < low)num = low;}
-
-bool Controller::Update(float velX, float velY, float velYaw)
+bool Controller::Update(float velX, float velY, float velYaw,bool Hop,bool restrictHop = false)
 {
 	CLAMP(velX,-1,1);
 	CLAMP(velY,-1,1);
 	CLAMP(velYaw,-1,1);
-	//printf("ctrl:[%.3f,%.3f,%.3f]\n",velX,velY,velYaw);
+
+	if(m_needStop)
+		velX = velY = velR = 0;
+
+
+	if(m_stop)
+	{
+		if(m_needHop)_doHop();
+		if(velX != 0 || velY != 0 || velYaw != 0)StartMoving();
+		else return false;
+	}else
+	{
+		if(restrictHop)
+		{
+			m_needHop = true;
+			m_needStop = true;
+			return;
+		}
+	}
+
 
     if(m_time == -1)
         m_time = clock();
 	clock_t time = clock();
 	float dt = (float)(time - m_time)/CLOCKS_PER_SEC;
 	m_time = time;
-	m_planner.SetVelocity(velY, velX, velYaw);
-	LegController::CtrlParam param;
+	_updateVel(dt);
 
+	m_planner.SetVelocity(m_outVel[X], m_outVel[Y], m_outVel[R]);
+	LegController::CtrlParam param;
 	bool status = m_planner.Update(dt, m_pos, m_touchStatus);
+
+	if(status)
+	{
+		if(m_needStop)
+		{
+			if(!m_moving)
+			{
+				m_stop = true;
+				m_needStop = false;
+				m_planner.Reset();
+				m_planner.Update(0,m_pos, m_touchStatus);
+			}
+		}
+	}
 	if (m_bVMCCtrl)
 	{
 		for (int i = 0; i < 4; ++i)
@@ -155,21 +225,18 @@ bool Controller::Update(float velX, float velY, float velYaw)
 	return status;
 }
 
-void Controller::RawControl(std::vector<FeetMovement> moves)
+void Controller::StartMoving()
 {
-	LegController::CtrlParam param;
-	for (int i = 0; i < 4; ++i)
-	{
-		param.ctrlMask = LegController::feetPos;
-		param.feetPosX = moves[i].x;
-		param.feetPosY = moves[i].y;
-		param.feetPosZ = moves[i].z;
-		m_pControllers[i]->ApplyCtrlParam(param);
-		//cout<<"applay motor:"<<i<<endl;
-		if (i == STOP_LEG)break;
-	}
+	m_time = -1;
+	m_planner.Reset();
+	m_stop = false;
 }
 
+void Controller::StopMoving()
+{
+	if(m_stop)return;
+	m_needStop = true;
+}
 
 void Controller::EnableVMC(bool enable)
 {
@@ -189,9 +256,10 @@ PacePlanner& Controller::GetPacePlanner()
 	return m_planner;
 }
 
-void Controller::Hop()
+void Controller::_doHop()
 {
 printf("start Hop\n");
+
 	const float leanTime = 5.0f,hopTime = 3.0f,hopbackTime = 3.0f,restTime = 3.0f;
 	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41,exp_y2 = -10,exp_z2 = -31;
 
