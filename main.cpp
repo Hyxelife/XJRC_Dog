@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "Console.h"
 #include "Controller.h"
+#include "AutoControl.h"
 using namespace std;
 
 #define DEG(deg)    (deg)/180.0f*3.141592653589f
@@ -11,7 +12,7 @@ int main()
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     Console con("/dev/input/event4");
-
+    AutoCtrl autoCtrl;
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
@@ -55,13 +56,21 @@ int main()
     con.Start();
     Console::ConsoleRequest req;
     Console::ConsoleStatus status;
+    AutoCtrl::AutoCtrlParam autoPar;
     //while(1);
     bool sysQuit = false;
     while(!sysQuit)
     {
         con.GetConsoleRequest(req);
         con.GetConsoleStatus(status);
-        controller.Update(req.x,req.y,req.r,req.reqHop,true);
+        if(status.auto_)
+        {
+            //TODO
+            autoCtrl.GetAutoCtrlParam(autoPar);
+            if(controller.Update(autoPar.x,autoPar.y,autoPar.r,autoPar.hop,true))
+                autoCtrl.UpdateStep();
+        }else
+            controller.Update(req.x,req.y,req.r,req.reqHop,true);
         //printf("update\n");
         if(req.reqStop)
         {
@@ -74,8 +83,11 @@ int main()
     }
     printf("[main]:system quitting...\n");
     controller.Exit();
-    printf("[main]Controller quit!\n");
+    printf("[main]:Controller quit!\n");
+    autoCtrl.Exit();
+    printf("[Auto]:Auto controller quit!\n");
     con.Exit();
+    printf("[Console]:Console quit!\n");
     printf("[main]:system quit!\n");
     return 0;
 }
