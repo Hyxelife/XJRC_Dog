@@ -64,7 +64,7 @@ def play_anim():
                 break
             id = int(ang[0])
             cnts[id]+=1
-            if cnts[id] == 10000:
+            if cnts[id] == 10:
                 status[id] = True
                 loaded[id][0] = float(ang[1])
                 loaded[id][1] = float(ang[2])
@@ -89,4 +89,4 @@ if __name__ == '__main__':
     if cmd == 'S':
         play_anim()
     elif cmd == 'R':
-        pass
+        realtime.connect()

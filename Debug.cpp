@@ -38,6 +38,7 @@ void Debug::Initialize(const char* recordFile,const char* outputFile,const char*
 
     if(rtRecordFile)
     {
+    enableRealtime = true;
         rcQueue = open(rtRecordFile,O_WRONLY);
         if(rcQueue < 0)
         {
@@ -89,4 +90,5 @@ void Debug::Record(int leg,float shoulder,float arm,float feet)
         mutex_unlock(mutexRecord);
     }else
         printf("%d,%f,%f,%f\n",leg,shoulder,arm,feet);
+    usleep(10000);
 }

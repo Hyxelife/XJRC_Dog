@@ -11,7 +11,7 @@ public:
         cycCurve,
     };
     void Reset();
-    PacePlanner(float maxStepFwd,float maxStepVrt,float dogWidth,float dogLength,float maxRotation);
+    PacePlanner(float maxStepFwd,float maxStepVrt,float maxRotation,float dogWidth,float dogLength);
     void SetPaceType(PaceType type);
     void SetGait(Gait gait,float transitionTime);
 

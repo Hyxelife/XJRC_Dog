@@ -22,7 +22,7 @@ Controller::Controller(
 	std::vector<std::vector<float>> motorSign,
 	LegController::VMCParam param,
 	CtrlInitParam initParam,MechParam mcParam)
-	:m_planner(initParam.maxVelFw,initParam.maxVelVt,mcParam.dogWidth,mcParam.dogLength,initParam.maxVelRt),
+	:m_planner(initParam.maxVelFw,initParam.maxVelVt,initParam.maxVelRt,mcParam.dogWidth,mcParam.dogLength),
 	m_pos(4,FeetMovement(0,0,0)),
 	m_touchStatus(4,true),
 	m_kp(initParam.kp),m_kw(initParam.kw),
@@ -123,7 +123,7 @@ void Controller::Exit()
 
 void Controller::_updateVel(float x,float y,float r,float dt)
 {
-	float ctrlVel[3] = {x*m_maxVel[X],y*m_maxVel[Y],r*m_maxVel[R]};
+	float ctrlVel[3] = {x,y,r};
     float err_x = ctrlVel[X] - m_outVel[X],err_y = ctrlVel[Y]-m_outVel[Y],err_r = ctrlVel[R]-m_outVel[R];
 
 	if(m_smthCtrl)
@@ -145,14 +145,17 @@ void Controller::_updateVel(float x,float y,float r,float dt)
 		m_outVel[Y] = ctrlVel[Y];
 		m_outVel[R] = ctrlVel[R];
 	}
-	if(fabsf(m_outVel[X])<m_movingThres)m_outVel[X] = 0;
-	if(fabsf(m_outVel[Y])<m_movingThres)m_outVel[Y] = 0;
-	if(fabsf(m_outVel[R])<m_movingThres*0.1)m_outVel[R] = 0;
+	if(fabsf(m_outVel[X])<m_movingThres && x == 0)m_outVel[X] = 0;
+	if(fabsf(m_outVel[Y])<m_movingThres && y == 0)m_outVel[Y] = 0;
+	if(fabsf(m_outVel[R])<m_movingThres && r == 0)m_outVel[R] = 0;
 
 
 	m_moving = fabsf(m_outVel[X])>m_movingThres ||
 				fabsf(m_outVel[Y])>m_movingThres ||
 				fabsf(m_outVel[R])>m_movingThres;
+    CLAMP(m_outVel[X],-1,1);
+    CLAMP(m_outVel[Y],-1,1);
+    CLAMP(m_outVel[R],-1,1);
 }
 
 bool Controller::Update(float velX, float velY, float velYaw,bool Hop,bool restrictHop)
@@ -194,7 +197,7 @@ bool Controller::Update(float velX, float velY, float velYaw,bool Hop,bool restr
 	float dt = (float)(time - m_time)/CLOCKS_PER_SEC;
 	m_time = time;
 	_updateVel(velX,velY,velYaw,dt);
-    //printf("x:%f,y:%f,r:%f\n",m_outVel[Y], m_outVel[X], m_outVel[R]);
+    //printf("x:%f,y:%f,r:%f,dt:%f\n",m_outVel[Y], m_outVel[X], m_outVel[R],dt);
 	m_planner.SetVelocity(m_outVel[Y], m_outVel[X], m_outVel[R]);
 	LegController::CtrlParam param;
 	bool status = m_planner.Update(dt, m_pos, m_touchStatus);
@@ -291,7 +294,7 @@ PacePlanner& Controller::GetPacePlanner()
 
 void Controller::_doHop()
 {
-//printf("start Hop\n");
+    printf("start Hop\n");
 
 	const float leanTime = 5.0f,hopTime = 3.0f,hopbackTime = 3.0f,restTime = 3.0f;
 	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41,exp_y2 = -10,exp_z2 = -31;

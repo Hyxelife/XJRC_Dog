@@ -11,7 +11,7 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize("./log/record.txt","./log/log.txt",NULL);
+    Debug::Initialize("./log/record.txt","./log/log.txt",NULL);//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
@@ -72,6 +72,15 @@ int main()
     bool connectStart = false;
     while(!sysQuit)
     {
+        /////////////test area//////////////////////
+        controller.Update(0,0,0,true);
+        continue;
+        /////////////end test area//////////////////
+
+
+
+
+
     //OUT("loop\n");
         con.GetConsoleRequest(req);
         con.GetConsoleStatus(status);
