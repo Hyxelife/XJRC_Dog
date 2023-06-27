@@ -294,9 +294,9 @@ PacePlanner& Controller::GetPacePlanner()
 
 void Controller::_doHop()
 {
-    printf("start Hop\n");
+    printf("[Controller-Hopping]start Hop\n");
 
-	const float leanTime = 5.0f,hopTime = 3.0f,hopbackTime = 3.0f,restTime = 3.0f;
+	const float leanTime = 1.0f,hopTime = 0.5f,hopbackTime = 0.5f,restTime = 1.0f;
 	const float exp_y1 = -4,exp_z1 = -15,exp_x1 = 9.41,exp_y2 = -10,exp_z2 = -31;
 
 	float timer = 0;
@@ -310,7 +310,7 @@ void Controller::_doHop()
 		params[i].ctrlMask = LegController::feetPos;
 	}
     //printf("current:%.3f,%.3f,%.3f\n",pos[0].x,pos[0].y,pos[0].z);
-	//printf("do lie down\n");
+	printf("[Controller-Hopping]do lie down\n");
 	//lie down
 	while(timer < leanTime)
 	{
@@ -334,7 +334,7 @@ void Controller::_doHop()
 	}
 	//char ch = getchar();
 	//hop
-	//printf("do hop\n");
+	printf("[Controller-Hopping]do hop\n");
     timer = 0;
 	etime = stime = clock();
 	while(timer < hopTime)
@@ -366,7 +366,7 @@ void Controller::_doHop()
 
 	timer = 0;
 	etime = stime = clock();
-	//printf("do retrive\n");
+	printf("[Controller-Hopping]do retrive\n");
 	while(timer < hopbackTime)
 	{
 		float t = timer/hopbackTime;
@@ -378,7 +378,7 @@ void Controller::_doHop()
 			params[i].feetPosZ = z0 * (1 - t) * (1 - t) * (1 - t) +
 				3 * z1 * t * (1 - t) * (1 - t) +
 				3 * z2 * (t) * (t) * (1 - t) + z3 * (t) * (t) * (t);
-				if(i == 0)
+				//if(i == 0)
 				//printf("x=%f,y=%f,z=%f\n",params[i].feetPosX,params[i].feetPosY,params[i].feetPosZ);
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
@@ -391,7 +391,7 @@ void Controller::_doHop()
 
 	//touch down
 	//ch = getchar();
-	//printf("do touch down\n");
+	printf("[Controller-Hopping]do touch down\n");
 	LegMotors::MotorParams mt_params[4];
 	for(int i = 0;i<4;++i)
 	{
@@ -436,7 +436,7 @@ void Controller::_doHop()
 
     m_time = -1;
 	m_planner.Reset();
-    printf("end hop\n");
+    printf("[Controller-Hopping]end hop\n");
 }
 
 

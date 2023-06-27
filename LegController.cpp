@@ -53,6 +53,7 @@ void LegController::_doStartUp()
             (1.0f-progress)*initAngle.armFeetIntersect+progress*targetAngle.armFeetIntersect
         );
     } while (progress <= 1.0f);
+    this->m_currentPos = move;
 }
 
 
