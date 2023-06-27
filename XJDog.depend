@@ -2410,7 +2410,7 @@
 	<vector>
 	<list>
 
-1687771214 source:/home/robocon/XJDog/LegController.cpp
+1687834287 source:/home/robocon/XJDog/LegController.cpp
 	"LegController.h"
 	<string>
 	<sstream>
@@ -2429,7 +2429,7 @@
 	<Windows.h>
 	<pthread.h>
 
-1685628596 /home/robocon/XJDog/LegMotors.h
+1687834287 /home/robocon/XJDog/LegMotors.h
 	"motor/SerialPort.h"
 	"motor/motor_control.h"
 	"Kinematics.h"
@@ -2486,11 +2486,12 @@
 
 1684333613 ad.h"
 
-1687772912 source:/home/robocon/XJDog/LegMotors.cpp
+1687836189 source:/home/robocon/XJDog/LegMotors.cpp
 	<iostream>
 	<fstream>
+	"Debug.h"
 
-1687770114 source:/home/robocon/XJDog/motor/motor_control.cpp
+1687834301 source:/home/robocon/XJDog/motor/motor_control.cpp
 
 1679108098 source:/home/robocon/XJDog/motor/unitreeMotor.cpp
 
@@ -2511,9 +2512,10 @@
 	<iostream>
 	<strings.h>
 
-1687772929 source:/home/robocon/XJDog/Controller.cpp
+1687838069 source:/home/robocon/XJDog/Controller.cpp
 	"Controller.h"
 	<iostream>
+	"Debug.h"
 
 1687768352 /home/robocon/XJDog/Controller.h
 	"eigen-3.4.0/Eigen/Eigen"
@@ -2521,17 +2523,21 @@
 	"Sensor.h"
 	"LegController.h"
 
-1687770372 source:/home/robocon/XJDog/main.cpp
+1687839763 source:/home/robocon/XJDog/main.cpp
 	<iostream>
 	<stdio.h>
 	"Console.h"
 	"Controller.h"
+	"AutoControl.h"
+	"Connector.h"
+	"Debug.h"
 
-1687769583 /home/robocon/XJDog/Console.h
+1687834287 /home/robocon/XJDog/Console.h
 	"MultiThread.h"
 	<fstream>
+	"AutoControl.h"
 
-1687769612 source:/home/robocon/XJDog/Console.cpp
+1687839153 source:/home/robocon/XJDog/Console.cpp
 	"Console.h"
 	<stdio.h>
 	<math.h>
@@ -5064,6 +5070,31 @@
 	"Connector.h"
 
 1687833522 source:/home/hehy02/robocon/XJRC_Dog/Debug.cpp
+	"Debug.h"
+	<stdarg.h>
+	<fcntl.h>
+	<unistd.h>
+
+1687834287 /home/robocon/XJDog/AutoControl.h
+	"fcntl.h"
+	"MultiThread.h"
+	<queue>
+
+1687834287 /home/robocon/XJDog/Debug.h
+	"MultiThread.h"
+	<fstream>
+
+1687834287 /home/robocon/XJDog/Connector.h
+	"AutoControl.h"
+	"MultiThread.h"
+
+1687834287 source:/home/robocon/XJDog/AutoControl.cpp
+	"AutoControl.h"
+
+1687834287 source:/home/robocon/XJDog/Connector.cpp
+	"Connector.h"
+
+1687837350 source:/home/robocon/XJDog/Debug.cpp
 	"Debug.h"
 	<stdarg.h>
 	<fcntl.h>

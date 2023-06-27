@@ -5,7 +5,7 @@ using  namespace std;
 
 #define DEBUG_MODE
 #ifdef DEBUG_MODE
-const bool enableMap[4] = {true,false,false,false};
+const bool enableMap[4] = {true,true,true,true};
 #endif // DEBUG_MODE
 
 #define X	0

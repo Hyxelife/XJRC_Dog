@@ -69,6 +69,7 @@ void Debug::Output(const char* fmt,...)
         mutex_lock(mutexOutput);
         int n = vsprintf(outputBuffer,fmt,args);
         outFile.write(outputBuffer,n);
+        vprintf(fmt, args);
         mutex_unlock(mutexOutput);
     }else
         vprintf(fmt, args);
@@ -77,9 +78,15 @@ void Debug::Output(const char* fmt,...)
 
 void Debug::Record(int leg,float shoulder,float arm,float feet)
 {
-    mutex_lock(mutexRecord);
-    int n = sprintf(recordBuffer,"%d,%f,%f,%f\n",leg,shoulder,arm,feet);
-    rcFile.write(recordBuffer,n);
-    write(rcQueue,recordBuffer,n);
-    mutex_unlock(mutexRecord);
+    if(enableRealtime || enableRecord)
+    {
+        mutex_lock(mutexRecord);
+        int n = sprintf(recordBuffer,"%d,%f,%f,%f\n",leg,shoulder,arm,feet);
+        if(enableRecord)
+            rcFile.write(recordBuffer,n);
+        if(enableRealtime)
+            write(rcQueue,recordBuffer,n);
+        mutex_unlock(mutexRecord);
+    }else
+        printf("%d,%f,%f,%f\n",leg,shoulder,arm,feet);
 }

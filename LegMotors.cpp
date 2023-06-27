@@ -117,8 +117,9 @@ void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInt
     //if(step == 10000)
     //cout << "position control:\n"<< str,step = 0;
        //usleep(10000);
-    _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
-    _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+
+    //_checkPos(shoulderAngle, armAngle, armFeetInterAngle);
+    //_checkRange(shoulderAngle, armAngle, armFeetInterAngle);
 
     Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
 

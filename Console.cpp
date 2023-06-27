@@ -130,7 +130,7 @@ void Console::_console()
                 case 'q':
                 {
                     m_request.reqStop = true;
-                    m_expStatus.mannaul = false;
+                    m_expStatus.auto_ = false;
 
                 }break;
             }
@@ -151,10 +151,11 @@ void Console::_console()
             }
             if(m_expStatus.quit)
             {
-                printf("waiting to quit...\n");
+                //printf("waiting to quit...\n");
                 continue;
             }
             scanf("%c",&cmd);
+            printf("recv:%c\n",cmd);
             switch(cmd)
             {
                 case 'H':
@@ -165,7 +166,7 @@ void Console::_console()
                     printf("**********************************\n");
                     printf("[h/H] help page\n");
                     printf("[m/M] mannually control\n");
-                    printf("[a/A] automatically control\n");
+                    printf("[v/V] automatically control\n");
                     printf("[t/T] automatic test\n");
                     printf("[x/X] quit system\n");
                     printf("when system is mannually controlling:\n");
@@ -190,14 +191,14 @@ void Console::_console()
                     m_request.reqStop = true;
                     m_expStatus.mannaul = true;
                 }break;
-                case 'a':
-                case 'A':
+                case 'v':
+                case 'V':
                 {
                     m_expStatus.auto_ = true;
                     m_request.reqStop = true;
                 }break;
-                case 'q':
-                case 'Q':
+                case 'x':
+                case 'X':
                 {
                     m_request.reqStop = true;
                     m_expStatus.quit = true;
@@ -267,6 +268,7 @@ void Console::UpdateEvent(bool ctrlStop)
         printf("[Console]:mode changed!\n");
         printf("mannaul:%d,auto:%d,test:%d,quit:%d\n",m_status.mannaul,m_status.auto_,m_status.test,m_status.quit);
         m_prop = false;
+        fflush(stdin);
         }
     }
 }

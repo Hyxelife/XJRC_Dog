@@ -11,11 +11,11 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize("./log/record.txt","./log/log.txt","./simluator/pipe.txt");
+    Debug::Initialize("./log/record.txt","./log/log.txt",NULL);
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
-    Console con("/dev/input/event4",&autoCtrl);
+    Console con("/dev/input/event5",&autoCtrl);
 
     Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
@@ -60,9 +60,9 @@ int main()
     OUT("[main]:params ready!starting up ...\n");
 
     controller.Start(3.0f);
-    OUT("[main]:finish start up procedure!");
+    OUT("[main]:finish start up procedure!\n");
 
-    OUT("[main]:start loop");
+    OUT("[main]:start loop\n");
     con.Start();
     Console::ConsoleRequest req;
     Console::ConsoleStatus status;
@@ -72,6 +72,7 @@ int main()
     bool connectStart = false;
     while(!sysQuit)
     {
+    //OUT("loop\n");
         con.GetConsoleRequest(req);
         con.GetConsoleStatus(status);
         if(status.auto_ || status.test)
@@ -103,10 +104,13 @@ int main()
     OUT("[main]:system quitting...\n");
     controller.Exit();
     OUT("[main]:Controller quit!\n");
+    printf("111");
     connector.Exit();
     OUT("[Auto]:Connector quit!\n");
+    printf("222");
     con.Exit();
     OUT("[Console]:Console quit!\n");
+    printf("333");
     OUT("[main]:system quit!\n");
     Debug::Exit();
     return 0;
