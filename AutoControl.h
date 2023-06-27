@@ -31,17 +31,21 @@ public:
     {
         float x,y,r;
         bool hop;
+        bool stop;
     };
 
 public:
     AutoCtrl();
+    ~AutoCtrl();
     void UpdateStep();
     void GetAutoCtrlParam(AutoCtrlParam& param){param = m_param;}
     void AddAction(Action action);
+    void AddAction(ActionType type,int count);
     void AddActions(std::vector<Action> actions);
     void ClearActions();
     bool IsEmpty();
-    protected:
+protected:
+    MUTEX m_mutex;
     AutoCtrlParam m_param;
     std::queue<Action> m_actions;
 };

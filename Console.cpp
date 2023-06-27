@@ -136,10 +136,31 @@ void Console::_console()
             }
         }else if(m_status.test)
         {
+            if(!m_expStatus.test)
+            {
+                if(!m_prop)
+                printf("waiting to exit test mode...\n"),m_prop = true;
+                continue;
+            }
             scanf("%c",&cmd);
+            printf("test recv : %c\n",cmd);
             switch(cmd)
             {
+                case 'G':
+                {
+                    m_pCtrl->AddAction(AutoCtrl::run,10);
+                    m_pCtrl->AddAction(AutoCtrl::rotateL,4);
+                    printf("test added!\n");
+                }break;
+                case 'q':
+                case 'Q':
+                {
+                    m_pCtrl->ClearActions();
+                    m_request.reqStop = true;
+                    m_expStatus.test = false;
+                    printf("test removed!\n");
 
+                }break;
             }
         }else
         {
@@ -228,6 +249,7 @@ Console::Console(const char* strKeyEvent,AutoCtrl* pCtrl)
 
 
     m_threadQuit = true;
+    m_threadDesc = 0;
     m_request.r = m_request.x = m_request.y = 0;
     m_request.reqHop = m_request.reqStop = false;
     m_status.auto_ = m_status.mannaul =m_status.quit = m_status.test= false;
@@ -245,6 +267,7 @@ void Console::Start()
 
 void Console::Exit()
 {
+    if(m_threadQuit)return;
     m_threadQuit = true;
     thread_join(m_threadDesc);
     thread_destroy(m_threadDesc);

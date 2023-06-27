@@ -82,7 +82,10 @@ bool PacePlanner::Update(float deltaTime,std::vector<FeetMovement>& move,std::ve
 float centerY = -5;
     bool loopOver = false;
     m_totalTime += deltaTime;
-    //cout<<"totalTime:"<<m_totalTime<<endl;
+
+    //static int cnt = 0;
+    //if(cnt++ == 1000)
+     //   cout<<"totalTime:"<<m_totalTime<<endl,cnt = 0;
     if(m_totalTime >= m_gait.GetTotalDuration())
     {
        // cout<<"1s"<<endl;

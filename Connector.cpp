@@ -37,6 +37,7 @@ Connector::Connector(GameType type,AutoCtrl* pCtrl)
 :m_gameType(type)
 {
     m_sysQuit = true;
+    m_threadDesc = 0;
     m_state = 0;
     m_pCtrl = pCtrl;
 }
@@ -89,6 +90,7 @@ void Connector::Start()
 
 void Connector::Exit()
 {
+    if(m_sysQuit)return;
     m_sysQuit = true;
     thread_join(m_threadDesc);
     thread_destroy(m_threadDesc);

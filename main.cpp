@@ -77,10 +77,6 @@ int main()
         //continue;
         /////////////end test area//////////////////
 
-
-
-
-
     //OUT("loop\n");
         con.GetConsoleRequest(req);
         con.GetConsoleStatus(status);
@@ -95,6 +91,10 @@ int main()
                     connectStart = true;
                 }
             }
+            if(autoCtrl.IsEmpty())
+                controller.StopMoving();
+            else if(controller.IsStop())
+                controller.StartMoving();
             autoCtrl.GetAutoCtrlParam(autoPar);
             if(controller.Update(autoPar.x,autoPar.y,autoPar.r,autoPar.hop,true))
                 autoCtrl.UpdateStep();
@@ -113,13 +113,13 @@ int main()
     OUT("[main]:system quitting...\n");
     controller.Exit();
     OUT("[main]:Controller quit!\n");
-    printf("111");
+    printf("111\n");
     connector.Exit();
     OUT("[Auto]:Connector quit!\n");
-    printf("222");
+    printf("222\n");
     con.Exit();
     OUT("[Console]:Console quit!\n");
-    printf("333");
+    printf("333\n");
     OUT("[main]:system quit!\n");
     Debug::Exit();
     return 0;
