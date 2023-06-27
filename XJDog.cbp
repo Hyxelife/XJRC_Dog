@@ -42,10 +42,16 @@
 			<Add library="lib/libunitreeMotorSDK_Linux64.so" />
 			<Add directory="lib" />
 		</Linker>
+		<Unit filename="AutoControl.cpp" />
+		<Unit filename="AutoControl.h" />
+		<Unit filename="Connector.cpp" />
+		<Unit filename="Connector.h" />
 		<Unit filename="Console.cpp" />
 		<Unit filename="Console.h" />
 		<Unit filename="Controller.cpp" />
 		<Unit filename="Controller.h" />
+		<Unit filename="Debug.cpp" />
+		<Unit filename="Debug.h" />
 		<Unit filename="Gait.cpp" />
 		<Unit filename="Gait.h" />
 		<Unit filename="Kinematics.cpp" />

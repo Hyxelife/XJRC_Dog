@@ -66,12 +66,13 @@ void LegMotors::_checkRange(float shoulderAngle,float armAngle,float feetAngle)
         SAFE_TRAP("[LegMotor]:feet angle!",feetAngle);
 }
 
-LegMotors::LegMotors(AxisMovement zeroPos,std::vector<float> motorSign,float motorScalar,std::string portName)
+LegMotors::LegMotors(AxisMovement zeroPos,std::vector<float> motorSign,float motorScalar,std::string portName,int id)
 :m_serial(portName),
 m_motorSign(motorSign),
 m_zeros(zeroPos),
 m_name(portName),
-m_params(0.2,6)
+m_params(0.2,6),
+m_id(id)
 {
     MOTOR_recv recv = position_get(m_serial, 0);
     m_currentAngle.shoulderHorizontal = m_motorSign[0] * (recv.Pos - m_zeros.shoulderHorizontal) / ms_motorScalar;

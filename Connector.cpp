@@ -19,16 +19,16 @@
 #define STA_OBS_BRIDGE      2
 #define STA_OBS_BALANCE     3
 #define STA_OBS_STAIR           4
-#define STA_OBS_FINAL           5    
-#define STA_OBS_TURN            6   
+#define STA_OBS_FINAL           5
+#define STA_OBS_TURN            6
 
 
 void* Connector::_threadFunc(void* p)
 {
     Connector* pThis = (Connector*) p;
-    
+
     //TODO: out layer [communication]
-    
+
 
     return 0;
 }
@@ -39,7 +39,7 @@ Connector::Connector(GameType type,AutoCtrl* pCtrl)
     m_sysQuit = true;
     m_state = 0;
     m_pCtrl = pCtrl;
-}   
+}
 
 void Connector::ActionOver()
 {
@@ -49,7 +49,7 @@ void Connector::ActionOver()
         {
             case STA_SPD_START_RUN:
             case STA_SPD_TURN:
-            case STA_SPD_FINAL:
+            case STA_SPD_FINAL:break;
         }
     }else if(m_gameType == obstacle)
     {
@@ -60,7 +60,7 @@ void Connector::ActionOver()
             case STA_OBS_TURN:
             case STA_OBS_BALANCE:
             case STA_OBS_STAIR:
-            case STA_OBS_FINAL:
+            case STA_OBS_FINAL:break;
         }
     }
 }

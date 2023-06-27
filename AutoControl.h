@@ -1,3 +1,4 @@
+#pragma once
 #include "fcntl.h"
 #include "MultiThread.h"
 #include <queue>
@@ -22,7 +23,7 @@ class AutoCtrl
     struct Action
     {
         int actionCnt;
-        ActionType action;  
+        ActionType action;
     };
 public:
 

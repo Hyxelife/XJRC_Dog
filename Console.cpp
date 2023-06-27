@@ -139,7 +139,7 @@ void Console::_console()
             scanf("%c",&cmd);
             switch(cmd)
             {
-                
+
             }
         }else
         {
@@ -182,7 +182,7 @@ void Console::_console()
                     printf("\t[k{cnt1}] hop and move {cnt} steps\n");
                     printf("\t[h] hop once\n");
                     printf("\t[q] quit\n");
-                    
+
                 }break;
                 case 'm':
                 case 'M':
@@ -214,7 +214,7 @@ void Console::_console()
     printf("[Console]:system quit!\n");
 }
 
-Console::Console(const char* strKeyEvent)
+Console::Console(const char* strKeyEvent,AutoCtrl* pCtrl)
 {
     m_eventFd = open(strKeyEvent,O_RDONLY,0777);
     if(m_eventFd < 0)
@@ -222,6 +222,7 @@ Console::Console(const char* strKeyEvent)
         printf("[Console]:cannot open event device\n");
         return;
     }
+    m_pCtrl = pCtrl;
     //m_event.open(strKeyEvent);
 
 

@@ -24,7 +24,7 @@ void Debug::Initialize(const char* recordFile,const char* outputFile,const char*
             exit(-1);
         }
     }else enableRecord = false;
-    
+
     if(outputFile)
     {
         enableOutput = true;
@@ -78,7 +78,7 @@ void Debug::Output(const char* fmt,...)
 void Debug::Record(int leg,float shoulder,float arm,float feet)
 {
     mutex_lock(mutexRecord);
-    int n = sprintf(recordBuffer,"%d,%f,%f,%f\n",leg,shoulder,arm,feett);
+    int n = sprintf(recordBuffer,"%d,%f,%f,%f\n",leg,shoulder,arm,feet);
     rcFile.write(recordBuffer,n);
     write(rcQueue,recordBuffer,n);
     mutex_unlock(mutexRecord);

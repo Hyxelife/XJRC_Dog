@@ -14,8 +14,9 @@ int main()
     Debug::Initialize("./log/record.txt","./log/log.txt","./simluator/pipe.txt");
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
-    Console con("/dev/input/event4");
     AutoCtrl autoCtrl;
+    Console con("/dev/input/event4",&autoCtrl);
+
     Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
@@ -102,8 +103,8 @@ int main()
     OUT("[main]:system quitting...\n");
     controller.Exit();
     OUT("[main]:Controller quit!\n");
-    autoCtrl.Exit();
-    OUT("[Auto]:Auto controller quit!\n");
+    connector.Exit();
+    OUT("[Auto]:Connector quit!\n");
     con.Exit();
     OUT("[Console]:Console quit!\n");
     OUT("[main]:system quit!\n");
