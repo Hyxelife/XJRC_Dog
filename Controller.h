@@ -7,6 +7,14 @@
 class Controller
 {
     public:
+    enum HopType
+    {
+        HopForward,
+        TestMotor,
+        HopToBalance,
+        RestoreAngle,
+
+    };
     struct MechParam
     {
         MechParam(float dogWidth,float dogLength):
@@ -42,7 +50,7 @@ public:
     ~Controller();
 
     void EnableSmoothCtrl(bool enable);
-    bool Update(float velX,float velY,float velYaw,bool hop,bool restrictHop = false);
+    bool Update(float velX,float velY,float velYaw,bool hop,HopType type,bool restrictHop = false,float climbAngle = 0);
     void EnableVMC(bool enable);
     void Start(float startUpTime);
     void Exit();
@@ -52,7 +60,9 @@ public:
     void StartMoving();
     PacePlanner& GetPacePlanner();
     protected:
-    void _doHop();
+    void _doHop(HopType type);
+    void _hopAndBalance();
+    void _restoreAngle();
     void _updateVel(float x,float y,float r,float deltaTime);
 
 protected:
@@ -73,6 +83,7 @@ protected:
     float m_kp,m_kw;
     bool m_needStop;
     bool m_needHop;
+    HopType m_hopType;
     bool m_stop;
     bool m_moving;
     float m_movingThres;

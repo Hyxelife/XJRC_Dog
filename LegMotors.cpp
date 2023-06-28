@@ -20,11 +20,26 @@ std::vector<LegMotors*> LegMotors::ms_registerMotor;
                                 while(true){cout<<"[LegMotor]:system unsafe!!!motor:"<<m_name<<msg<<"@"<<info<<endl;usleep(10000000);}\
                             }
 
+void LegMotors::_checkParam(float kp,float kw)
+{
+    while(!ms_systemSafe)usleep(10000000);
+    const float maxKP = 3;
+    const float maxKW = 20;
+
+    if(kp <0)SAFE_TRAP("[LegMotor]:kp小于0！",kp);
+    if(kp > maxKP)SAFE_TRAP("[LegMotor]:kp过大！",kp);
+    if(!(kp>=0 && kp<maxKP))
+        SAFE_TRAP("[LegMotor]:kp!",kp);
+
+    if(kw<0)SAFE_TRAP("[LegMotor]:kw小于0！",kw);
+    if(kw>maxKW)SAFE_TRAP("[LegMotor]:kw过大!",kw);
+    if(!(kw>=0 && kw<=maxKW))
+        SAFE_TRAP("[LegMotor]:kw!",kw);
+}
 
 void LegMotors::_checkPos(float shoulderPos,float armPos,float feetPos)
 {
-    return;
-    const float safetyAngle = DEG(5);
+    const float safetyAngle = DEG(15);
     while(!ms_systemSafe)usleep(10000000);
 
     float deltaAngle = fabsf(m_currentAngle.shoulderHorizontal-shoulderPos);
@@ -85,6 +100,8 @@ m_id(id)
     recv = position_get(m_serial, 2);
     m_currentAngle.armFeetIntersect = m_motorSign[2] * (recv.Pos - m_zeros.armFeetIntersect) / ms_motorScalar;
     m_currentTorque.armTorque = m_motorSign[2]*recv.T;
+    m_params.k_p = 0.1;
+    m_params.k_w = 4;
 }
 
 
@@ -106,9 +123,12 @@ void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInt
 {
     //Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
     _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
-    _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
     //return;
 
+    _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+    _checkParam(m_params.k_p,m_params.k_w);
+
+    /*
     MOTOR_recv recv;
     recv = postion_control(m_serial,0,m_motorSign[0]*shoulderAngle*ms_motorScalar+m_zeros.shoulderHorizontal);
     m_currentAngle.shoulderHorizontal = m_motorSign[0]*(recv.Pos-m_zeros.shoulderHorizontal)/ms_motorScalar;
@@ -117,6 +137,16 @@ void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInt
     m_currentAngle.armRotation = m_motorSign[1]*(recv.Pos-m_zeros.armRotation)/ms_motorScalar;
 
     recv = postion_control(m_serial,2,m_motorSign[2]*armFeetInterAngle*ms_motorScalar+m_zeros.armFeetIntersect);
+    m_currentAngle.armFeetIntersect = m_motorSign[2]*(recv.Pos-m_zeros.armFeetIntersect)/ms_motorScalar;
+    */
+    MOTOR_recv recv;
+    recv = position_control_custom(m_serial,0,m_motorSign[0]*shoulderAngle*ms_motorScalar+m_zeros.shoulderHorizontal,m_params.k_p,m_params.k_w);
+    m_currentAngle.shoulderHorizontal = m_motorSign[0]*(recv.Pos-m_zeros.shoulderHorizontal)/ms_motorScalar;
+
+    recv = position_control_custom(m_serial,1,m_motorSign[1]*armAngle*ms_motorScalar+m_zeros.armRotation,m_params.k_p,m_params.k_w);
+    m_currentAngle.armRotation = m_motorSign[1]*(recv.Pos-m_zeros.armRotation)/ms_motorScalar;
+
+    recv = position_control_custom(m_serial,2,m_motorSign[2]*armFeetInterAngle*ms_motorScalar+m_zeros.armFeetIntersect,m_params.k_p,m_params.k_w);
     m_currentAngle.armFeetIntersect = m_motorSign[2]*(recv.Pos-m_zeros.armFeetIntersect)/ms_motorScalar;
 
 }

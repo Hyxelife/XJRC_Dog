@@ -31,6 +31,7 @@ protected:
 
     void _checkPos(float shoulderPos,float armPos,float feetPos);
     void _checkRange(float shoudlerAngle,float armAngle,float feetAngle);
+    void _checkParam(float kp,float kw);
 protected:
     static std::vector<LegMotors*> ms_registerMotor;
     AxisMovement m_zeros;

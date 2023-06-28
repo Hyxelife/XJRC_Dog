@@ -6,15 +6,17 @@
 #include <fcntl.h>
 
 ////////////key masks///////////////
-#define MASK_A  0x01
-#define MASK_S  0x02
-#define MASK_D  0x04
-#define MASK_Q  0x08
-#define MASK_W  0x10
-#define MASK_E  0x20
-#define MASK_QUIT  0x40
-#define MASK_HOP  0x80
-#define MASK_STAND  0x100
+#define MASK_A          0x01
+#define MASK_S          0x02
+#define MASK_D          0x04
+#define MASK_Q          0x08
+#define MASK_W          0x10
+#define MASK_E          0x20
+#define MASK_QUIT       0x40
+#define MASK_HOP        0x80
+#define MASK_STAND      0x100
+#define MASK_HOPDOWN    0x200
+#define MASK_HOPTEST    0x400
 
 void Console::_updateKeyEvents()
 {
@@ -36,18 +38,21 @@ void Console::_updateKeyEvents()
             case KEY_SPACE:mask = MASK_HOP;break;
             case KEY_P:mask = MASK_QUIT;break;
             case KEY_F:mask = MASK_STAND;break;
+            case KEY_J:mask = MASK_HOPTEST;break;
         }
         if(!mask)return;
         if(key_info.value == 0)
-        {
-            //printf("key up\n");
             m_keyMask &= ~mask;
-        }
         else if(key_info.value == 1 || key_info.value == 2)
         {
             //printf("key pressed!\n");
-            m_keyMask |= mask;
-            }
+            mask = mask|m_keyMask;
+            //printf("%d,%d\n",mask&MASK_HOP,m_keyMask & MASK_HOP);
+            if((mask & MASK_HOP) && (m_keyMask & MASK_HOP )== 0)
+                mask |= MASK_HOPDOWN;
+            else mask &= ~MASK_HOPDOWN;
+            m_keyMask = mask;
+        }
     }
 }
 
@@ -99,8 +104,18 @@ void Console::_console()
             else if(m_keyMask & MASK_Q) m_request.r = 1;
             else m_request.r = 0;
 
-            if(m_keyMask & MASK_HOP)
+            if(m_keyMask & MASK_HOPDOWN)
+            {
                 m_request.reqHop = true;
+                m_request.hopType = Controller::HopForward;
+                //printf("Request Hop\n");
+                m_keyMask &= ~MASK_HOPDOWN;
+            }
+            if(m_keyMask & MASK_HOPTEST)
+            {
+                m_request.reqHop = true;
+                m_request.hopType = Controller::TestMotor;
+            }
 
             if(m_keyMask & MASK_STAND)
                 m_request.reqStop = true;
@@ -146,11 +161,17 @@ void Console::_console()
             printf("test recv : %c\n",cmd);
             switch(cmd)
             {
-                case 'G':
+                case 'g':
                 {
                     m_pCtrl->AddAction(AutoCtrl::run,10);
                     m_pCtrl->AddAction(AutoCtrl::rotateL,4);
                     printf("test added!\n");
+                }break;
+                case 'h':
+                {
+                    m_pCtrl->AddAction(AutoCtrl::hopToBalance,1);
+                    m_pCtrl->AddAction(AutoCtrl::climb,10);
+                    m_pCtrl->AddAction(AutoCtrl::balanceRestore,1);
                 }break;
                 case 'q':
                 case 'Q':
@@ -164,7 +185,7 @@ void Console::_console()
             }
         }else
         {
-            if(m_expStatus.auto_ || m_expStatus.mannaul)
+            if(m_expStatus.auto_ || m_expStatus.mannaul || m_expStatus.test)
             {
                 if(!m_prop)
                     printf("waiting to change mode...\n"),m_prop = true;
@@ -291,6 +312,7 @@ void Console::UpdateEvent(bool ctrlStop)
         printf("[Console]:mode changed!\n");
         printf("mannaul:%d,auto:%d,test:%d,quit:%d\n",m_status.mannaul,m_status.auto_,m_status.test,m_status.quit);
         m_prop = false;
+        m_keyMask = 0;
         fflush(stdin);
         }
     }

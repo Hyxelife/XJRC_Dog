@@ -21,6 +21,7 @@ public:
     void SetCurveHeight(float height);
     bool Update(float deltaTime,std::vector<FeetMovement>& move,std::vector<bool>& touch);
     void EnableVMC(bool vmcEnable);
+    void SetClimbAngle(float angle);
 protected:
     float _cycloidCurve(float time,float height);
 
@@ -48,4 +49,5 @@ protected:
     Gait m_lastGait;
     bool m_bMVCCtrl;
     float m_centerX,m_centerY;
+    float m_climbAngle;
 };

@@ -85,14 +85,15 @@ MOTOR_send motor_run;
     motor_run.K_P = k_p;//1       //3     //0.05
 
     motor_r.motorType = motor_run.motorType;
-    //cout<<"position"<<endl;
-    // encode data into motor commands
+
     modify_data(&motor_run);
-    //serial.sendRecv(&motor_run, &motor_r);
-    //extract_data(&motor_r);
-    //if(Motor_id == 2)
-    //cout<<"leg:"<<Motor_id<<",position:"<<Position<<endl;
-    //usleep(100000);
+    serial.sendRecv(&motor_run, &motor_r);
+    extract_data(&motor_r);
+
+    /////////////////////////////
+    //motor_r.Pos = Position;
+    /////////////////////////////
+
     return motor_r;
 }
 
@@ -115,9 +116,9 @@ MOTOR_recv postion_control(SerialPort& serial, int Motor_id, float Position)
     motor_r.motorType = motor_run.motorType;
     //cout<<"position"<<endl;
     // encode data into motor commands
-    modify_data(&motor_run);
-    serial.sendRecv(&motor_run, &motor_r);
-    extract_data(&motor_r);
+   // modify_data(&motor_run);
+   // serial.sendRecv(&motor_run, &motor_r);
+  //  extract_data(&motor_r);
     //if(Motor_id == 2)
     //Debug::Output("leg:%d,position:%f\n",Motor_id,Position);
     //cout<<"leg:"<<Motor_id<<",position:"<<Position<<endl;

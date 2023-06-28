@@ -13,6 +13,7 @@ PacePlanner::PacePlanner(float maxStepFwd,float maxStepVrt,float maxRotation,flo
     m_dogDirX =  dogWidth/m_dogRadius;
     m_dogDirY = dogLength/m_dogRadius;
     m_dogRadius /= 2.0f;
+    m_climbAngle = 0;//
     for(int i = 0;i<4;++i)
     {
         m_offset[i] = m_lastOffset[i] = {0.0f,0.0f};
@@ -75,6 +76,11 @@ void PacePlanner::SetVelocity(float forward,float vertical,float rotation)
     //for(int i = 0;i<4;++i)
      //   std::cout<<"applay motor:"<<i<<"pos:"<<m_offset[i].first<<","<<m_offset[i].second<<endl;
 
+}
+
+void PacePlanner::SetClimbAngle(float angle)
+{
+    m_climbAngle = angle;
 }
 
 bool PacePlanner::Update(float deltaTime,std::vector<FeetMovement>& move,std::vector<bool>& touch)
@@ -145,6 +151,9 @@ float centerY = -5;
                 move[i].z = -m_dogHeight;
                 touch[i] = true;
             }
+            move[i].y += sin(m_climbAngle)*move[i].z;
+            move[i].z *= cos(m_climbAngle);
+
         }
     }
     return loopOver;

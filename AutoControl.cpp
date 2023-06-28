@@ -14,7 +14,7 @@ AutoCtrl::~AutoCtrl()
 #include <stdio.h>
 void AutoCtrl::UpdateStep()
 {
-    printf("[Auto]:update steps!\n");
+
     mutex_lock(m_mutex);
     if(m_actions.empty())
     {
@@ -24,22 +24,36 @@ void AutoCtrl::UpdateStep()
         m_param.y = 0;
     }else
     {
+    printf("[Auto]:update steps!\n");
         ActionType type = m_actions.front().action;
         switch(type)
         {
-            case run:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;}break;
-            case back:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = -1;}break;
-            case stop:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;}break;
-            case turnR:{m_param.hop = false;m_param.r = -1;m_param.x = 0;m_param.y = 0.5;}break;
-            case turnL:{m_param.hop = false;m_param.r = 1;m_param.x = 0;m_param.y = 0.5;}break;
-            case rotateR:{m_param.hop = false;m_param.r = 1;m_param.x = m_param.y = 0;}break;
-            case rotateL:{m_param.hop = false;m_param.r = 1;m_param.x = m_param.y = 0;}break;
-            case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;}break;
-            case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;}break;
-            case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;}break;
+            case run:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;m_param.angle = 0;}break;
+            case back:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = -1;m_param.angle = 0;}break;
+            case stop:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;}break;
+            case turnR:{m_param.hop = false;m_param.r = -1;m_param.x = 0;m_param.y = 0.5;m_param.angle = 0;}break;
+            case turnL:{m_param.hop = false;m_param.r = 1;m_param.x = 0;m_param.y = 0.5;m_param.angle = 0;}break;
+            case rotateR:{m_param.hop = false;m_param.r = 1;m_param.x = m_param.y = 0;m_param.angle = 0;}break;
+            case rotateL:{m_param.hop = false;m_param.r = 1;m_param.x = m_param.y = 0;m_param.angle = 0;}break;
+            case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;m_param.angle = 0;}break;
+            case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;m_param.angle = 0;}break;
+            case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::HopForward;}break;
+            case hopToBalance:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::HopToBalance;}break;
+            case balanceRestore:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::RestoreAngle;}break;
+            case climb:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;m_param.angle = 15.0/180.0*3.1415926;}break;
         }
-        m_actions.front().actionCnt--;
-        if(m_actions.front().actionCnt <= 0)m_actions.pop();
+        switch(type)
+        {
+            case hop:
+            case hopToBalance:
+            case balanceRestore:m_actions.pop();break;
+            default:
+            {
+                m_actions.front().actionCnt--;
+                if(m_actions.front().actionCnt <= 0)m_actions.pop();
+            }break;
+        }
+
     }
     mutex_unlock(m_mutex);
 }

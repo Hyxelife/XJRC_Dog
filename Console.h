@@ -1,6 +1,7 @@
 #include "MultiThread.h"
 #include <fstream>
 #include "AutoControl.h"
+#include "Controller.h"
 
 class Console
 {
@@ -16,6 +17,7 @@ class Console
     {
         bool reqStop;
         bool reqHop;
+        Controller::HopType hopType;
         float x,y,r;
     };
     struct TestItem

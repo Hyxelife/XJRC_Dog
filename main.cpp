@@ -15,16 +15,16 @@ int main()
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
-    Console con("/dev/input/event5",&autoCtrl);
+    Console con("/dev/input/event4",&autoCtrl);
 
     Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-AxisMovement(4.7891,1.04273,4.89494),
-AxisMovement(4.64452,3.32453,2.8559),
-AxisMovement(1.46572,5.39886,0.995556),
-AxisMovement(2.16484,1.46879,0.449074),
+AxisMovement(4.9007,2.21852,4.94825),
+AxisMovement(5.09973,4.10072,2.82675),
+AxisMovement(0.224345,5.11967,5.14268),
+AxisMovement(1.90022,5.83873,0.516953),
 
 
 
@@ -97,13 +97,14 @@ AxisMovement(2.16484,1.46879,0.449074),
             }
             if(autoCtrl.IsEmpty())
                 controller.StopMoving();
-            else if(controller.IsStop())
-                controller.StartMoving();
+
             autoCtrl.GetAutoCtrlParam(autoPar);
-            if(controller.Update(autoPar.x,autoPar.y,autoPar.r,autoPar.hop,true))
+            if(autoPar.hop)
+                int j = 100;
+            if(controller.Update(autoPar.x,autoPar.y,autoPar.r,autoPar.hop,autoPar.hopType,true,autoPar.angle))
                 autoCtrl.UpdateStep();
         }else
-            controller.Update(req.x,req.y,req.r,req.reqHop,true);
+            controller.Update(req.x,req.y,req.r,req.reqHop,req.hopType,true);
         //printf("update\n");
         if(req.reqStop)
         {

@@ -2,6 +2,7 @@
 #include "fcntl.h"
 #include "MultiThread.h"
 #include <queue>
+#include "Controller.h"
 
 
 class AutoCtrl
@@ -16,9 +17,12 @@ class AutoCtrl
         turnL,
         rotateR,
         rotateL,
+        climb,
         moveR,
         moveL,
         hop,
+        hopToBalance,
+        balanceRestore,
     };
     struct Action
     {
@@ -31,6 +35,8 @@ public:
     {
         float x,y,r;
         bool hop;
+        float angle;
+        Controller::HopType hopType;
         bool stop;
     };
 

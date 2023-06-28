@@ -2429,7 +2429,7 @@
 	<Windows.h>
 	<pthread.h>
 
-1687834287 /home/robocon/XJDog/LegMotors.h
+1687934900 /home/robocon/XJDog/LegMotors.h
 	"motor/SerialPort.h"
 	"motor/motor_control.h"
 	"Kinematics.h"
@@ -2486,21 +2486,21 @@
 
 1684333613 ad.h"
 
-1687874603 source:/home/robocon/XJDog/LegMotors.cpp
+1687959374 source:/home/robocon/XJDog/LegMotors.cpp
 	<iostream>
 	<fstream>
 	"Debug.h"
 
-1687874596 source:/home/robocon/XJDog/motor/motor_control.cpp
+1687959389 source:/home/robocon/XJDog/motor/motor_control.cpp
 	"../Debug.h"
 
 1679108098 source:/home/robocon/XJDog/motor/unitreeMotor.cpp
 
-1687859730 source:/home/robocon/XJDog/PacePlanner.cpp
+1687955464 source:/home/robocon/XJDog/PacePlanner.cpp
 	"PacePlanner.h"
 	<iostream>
 
-1687846025 /home/robocon/XJDog/PacePlanner.h
+1687952419 /home/robocon/XJDog/PacePlanner.h
 	"Gait.h"
 	"Kinematics.h"
 
@@ -2513,18 +2513,18 @@
 	<iostream>
 	<strings.h>
 
-1687874040 source:/home/robocon/XJDog/Controller.cpp
+1687956388 source:/home/robocon/XJDog/Controller.cpp
 	"Controller.h"
 	<iostream>
 	"Debug.h"
 
-1687768352 /home/robocon/XJDog/Controller.h
+1687953373 /home/robocon/XJDog/Controller.h
 	"eigen-3.4.0/Eigen/Eigen"
 	"PacePlanner.h"
 	"Sensor.h"
 	"LegController.h"
 
-1687876042 source:/home/robocon/XJDog/main.cpp
+1687959616 source:/home/robocon/XJDog/main.cpp
 	<iostream>
 	<stdio.h>
 	"Console.h"
@@ -2533,12 +2533,13 @@
 	"Connector.h"
 	"Debug.h"
 
-1687834287 /home/robocon/XJDog/Console.h
+1687940164 /home/robocon/XJDog/Console.h
 	"MultiThread.h"
 	<fstream>
 	"AutoControl.h"
+	"Controller.h"
 
-1687859988 source:/home/robocon/XJDog/Console.cpp
+1687956059 source:/home/robocon/XJDog/Console.cpp
 	"Console.h"
 	<stdio.h>
 	<math.h>
@@ -5076,10 +5077,11 @@
 	<fcntl.h>
 	<unistd.h>
 
-1687859006 /home/robocon/XJDog/AutoControl.h
+1687954850 /home/robocon/XJDog/AutoControl.h
 	"fcntl.h"
 	"MultiThread.h"
 	<queue>
+	"Controller.h"
 
 1687834287 /home/robocon/XJDog/Debug.h
 	"MultiThread.h"
@@ -5089,7 +5091,7 @@
 	"AutoControl.h"
 	"MultiThread.h"
 
-1687860023 source:/home/robocon/XJDog/AutoControl.cpp
+1687956261 source:/home/robocon/XJDog/AutoControl.cpp
 	"AutoControl.h"
 	<stdio.h>
 
