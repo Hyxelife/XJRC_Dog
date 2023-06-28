@@ -55,14 +55,14 @@ void LegMotors::_checkRange(float shoulderAngle,float armAngle,float feetAngle)
         SAFE_TRAP("[LegMotor]:arm angle, too small!",armAngle);
     if(armAngle > safetyArm[1])
         SAFE_TRAP("[LegMotor]:arm angle, too large!",armAngle);
-    if(!(armAngle < safetyArm[0] && armAngle > safetyArm[1]))
+    if(!(armAngle > safetyArm[0] && armAngle < safetyArm[1]))
         SAFE_TRAP("[LegMotor]:arm angle!",armAngle);
 
     if(feetAngle < safetyFeet[0])
         SAFE_TRAP("[LegMotor]:feet angle, too small!",feetAngle);
     if(feetAngle > safetyFeet[1])
         SAFE_TRAP("[LegMotor]:feet angle, too large!",feetAngle);
-    if(!(feetAngle < safetyFeet[0] && feetAngle > safetyFeet[1]))
+    if(!(feetAngle > safetyFeet[0] && feetAngle < safetyFeet[1]))
         SAFE_TRAP("[LegMotor]:feet angle!",feetAngle);
 }
 
@@ -104,28 +104,11 @@ m_id(id)
 
 void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInterAngle)
 {
-    //static int step = 0;
-    //step++;
-    //if (step % 300000 != 0)return;
-    // WaitForSingleObject(log_mutex, INFINITE);
-     //stringstream formater;
-     //formater <<m_name<<" "<< RAD(shoulderAngle) << "," << RAD(armAngle) << "," << RAD(armFeetInterAngle) << endl;
-     //string str = formater.str();
-    // file.write(str.c_str(),str.size());
-    // file.flush();
-    // ReleaseMutex(log_mutex);
-    //if(step == 10000)
-    //cout << "position control:\n"<< str,step = 0;
-       //usleep(10000);
-
-    //_checkPos(shoulderAngle, armAngle, armFeetInterAngle);
-    //_checkRange(shoulderAngle, armAngle, armFeetInterAngle);
-
-    Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
-
-    return;
+    //Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
     _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
     _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+    //return;
+
     MOTOR_recv recv;
     recv = postion_control(m_serial,0,m_motorSign[0]*shoulderAngle*ms_motorScalar+m_zeros.shoulderHorizontal);
     m_currentAngle.shoulderHorizontal = m_motorSign[0]*(recv.Pos-m_zeros.shoulderHorizontal)/ms_motorScalar;
@@ -140,16 +123,16 @@ void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInt
 void LegMotors::TorqueCtrl(float shoulderTorque,float armTorque,float armFeetInterTorque)
 {
         // cout << "torque control:\n" << shoulderTorque << ", " << armTorque << ", " << armFeetInterTorque << endl;
+    return;
+    //MOTOR_recv recv;
+    //recv = torque_control(m_serial,0,shoulderTorque);
+    //m_currentAngle.shoulderHorizontal = m_motorSign[0]*(recv.Pos-m_zeros.shoulderHorizontal)/ms_motorScalar;
 
-    MOTOR_recv recv;
-    recv = torque_control(m_serial,0,shoulderTorque);
-    m_currentAngle.shoulderHorizontal = m_motorSign[0]*(recv.Pos-m_zeros.shoulderHorizontal)/ms_motorScalar;
+    //recv = postion_control(m_serial,1,armTorque);
+    //m_currentAngle.armRotation = m_motorSign[1]*(recv.Pos-m_zeros.armRotation)/ms_motorScalar;
 
-    recv = postion_control(m_serial,1,armTorque);
-    m_currentAngle.armRotation = m_motorSign[1]*(recv.Pos-m_zeros.armRotation)/ms_motorScalar;
-
-    recv = postion_control(m_serial,2,armFeetInterTorque);
-    m_currentAngle.armFeetIntersect = m_motorSign[2]*(recv.Pos-m_zeros.armFeetIntersect)/ms_motorScalar;
+    //recv = postion_control(m_serial,2,armFeetInterTorque);
+    //m_currentAngle.armFeetIntersect = m_motorSign[2]*(recv.Pos-m_zeros.armFeetIntersect)/ms_motorScalar;
 
 }
 

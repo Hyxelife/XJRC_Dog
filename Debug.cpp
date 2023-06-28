@@ -63,18 +63,15 @@ char outputBuffer[1024];
 char recordBuffer[1024];
 void Debug::Output(const char* fmt,...)
 {
+    mutex_lock(mutexOutput);
     va_list args;
     va_start(args, fmt);
+    int n = vsprintf(outputBuffer,fmt,args);
     if(enableOutput)
-    {
-        mutex_lock(mutexOutput);
-        int n = vsprintf(outputBuffer,fmt,args);
         outFile.write(outputBuffer,n);
-        vprintf(fmt, args);
-        mutex_unlock(mutexOutput);
-    }else
-        vprintf(fmt, args);
+    printf("%s",outputBuffer);
     va_end(args);
+    mutex_unlock(mutexOutput);
 }
 
 void Debug::Record(int leg,float shoulder,float arm,float feet)
