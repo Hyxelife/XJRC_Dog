@@ -31,10 +31,10 @@ void AutoCtrl::UpdateStep()
             case run:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;m_param.angle = 0;}break;
             case back:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = -1;m_param.angle = 0;}break;
             case stop:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;}break;
-            case turnR:{m_param.hop = false;m_param.r = -1;m_param.x = 0;m_param.y = 0.5;m_param.angle = 0;}break;
-            case turnL:{m_param.hop = false;m_param.r = 1;m_param.x = 0;m_param.y = 0.5;m_param.angle = 0;}break;
-            case rotateR:{m_param.hop = false;m_param.r = 1;m_param.x = m_param.y = 0;m_param.angle = 0;}break;
-            case rotateL:{m_param.hop = false;m_param.r = 1;m_param.x = m_param.y = 0;m_param.angle = 0;}break;
+            case turnR:{m_param.hop = false;m_param.r = -0.5;m_param.x = 0;m_param.y = 0.8;m_param.angle = 0;}break;
+            case turnL:{m_param.hop = false;m_param.r = 0.5;m_param.x = 0;m_param.y = 0.8;m_param.angle = 0;}break;
+            case rotateR:{m_param.hop = false;m_param.r = -0.5;m_param.x = m_param.y = 0;m_param.angle = 0;}break;
+            case rotateL:{m_param.hop = false;m_param.r = 0.5;m_param.x = m_param.y = 0;m_param.angle = 0;}break;
             case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;m_param.angle = 0;}break;
             case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;m_param.angle = 0;}break;
             case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::HopForward;}break;

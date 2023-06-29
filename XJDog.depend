@@ -2496,7 +2496,7 @@
 
 1679108098 source:/home/robocon/XJDog/motor/unitreeMotor.cpp
 
-1688012689 source:/home/robocon/XJDog/PacePlanner.cpp
+1688049270 source:/home/robocon/XJDog/PacePlanner.cpp
 	"PacePlanner.h"
 	<iostream>
 
@@ -2524,7 +2524,7 @@
 	"Sensor.h"
 	"LegController.h"
 
-1688032118 source:/home/robocon/XJDog/main.cpp
+1688048846 source:/home/robocon/XJDog/main.cpp
 	<iostream>
 	<stdio.h>
 	"Console.h"
@@ -5091,7 +5091,7 @@
 	"AutoControl.h"
 	"MultiThread.h"
 
-1687956261 source:/home/robocon/XJDog/AutoControl.cpp
+1688049612 source:/home/robocon/XJDog/AutoControl.cpp
 	"AutoControl.h"
 	<stdio.h>
 

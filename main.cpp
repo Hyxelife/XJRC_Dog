@@ -15,16 +15,19 @@ int main()
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
-    Console con("/dev/input/event12",&autoCtrl);
+    Console con("/dev/input/event11",&autoCtrl);
 
     Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-AxisMovement(5.12312,2.10923,4.89801),
-AxisMovement(4.91757,4.2104,2.80566),
-AxisMovement(0.36969,-1.01588,5.11009),
-AxisMovement(1.79898,5.78734,0.441788),
+
+ AxisMovement(4.86005,2.16675,4.70933),
+ AxisMovement(5.13961,4.08155,2.87622),
+ AxisMovement(0.291457,5.10357,5.19254),
+  AxisMovement(1.97309,5.90431,0.469016),
+
+
 
 
 
@@ -44,7 +47,7 @@ AxisMovement(1.79898,5.78734,0.441788),
             {1,-1,-1},
         },
         LegController::VMCParam(),
-        Controller::CtrlInitParam(0.5,5,9,9,0.3,0.01),
+        Controller::CtrlInitParam(0.5,5,14,14,0.3,0.01),
         Controller::MechParam(15+9.41f+9.41f,41)
     );
 
