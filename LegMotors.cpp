@@ -39,7 +39,7 @@ void LegMotors::_checkParam(float kp,float kw)
 
 void LegMotors::_checkPos(float shoulderPos,float armPos,float feetPos)
 {
-    const float safetyAngle = DEG(20);
+    const float safetyAngle = DEG(30);
     while(!ms_systemSafe)usleep(10000000);
 
     float deltaAngle = fabsf(m_currentAngle.shoulderHorizontal-shoulderPos);

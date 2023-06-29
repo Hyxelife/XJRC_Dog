@@ -11,20 +11,22 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize("./log/record.txt","./log/log.txt",NULL);//"./log/pipe.txt"
+    Debug::Initialize(NULL,"./log/log.txt",NULL);//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
-    Console con("/dev/input/event10",&autoCtrl);
+    Console con("/dev/input/event12",&autoCtrl);
 
     Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-AxisMovement(5.60326,1.92285,4.89379),
-AxisMovement(5.04527,4.21002,2.80681),
-AxisMovement(0.0253107,5.26233,5.21746),
-AxisMovement(1.79898,5.68111,0.391933),
+AxisMovement(5.12312,2.10923,4.89801),
+AxisMovement(4.91757,4.2104,2.80566),
+AxisMovement(0.36969,-1.01588,5.11009),
+AxisMovement(1.79898,5.78734,0.441788),
+
+
 
         },
 
