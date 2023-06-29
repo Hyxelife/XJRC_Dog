@@ -53,6 +53,10 @@ void PacePlanner::Reset()
 void PacePlanner::SetVelocity(float forward,float vertical,float rotation)
 {
     if(m_bMVCCtrl)return;
+    forward += 0.09;
+    rotation -= 0.03;
+    vertical += 0.02;
+
     if (forward > 1.0f)forward = 1.0f;
     else if (forward < -1.0f)forward = -1.0f;
 

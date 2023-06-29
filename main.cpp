@@ -11,32 +11,28 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize("./log/record.txt","./log/log.txt","./log/pipe.txt");//"./log/pipe.txt"
+    Debug::Initialize("./log/record.txt","./log/log.txt",NULL);//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
-    Console con("/dev/input/event3",&autoCtrl);
+    Console con("/dev/input/event10",&autoCtrl);
 
     Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-AxisMovement(4.97509,2.09427,4.88842),
-AxisMovement(5.09321,4.23073,2.85705),
-AxisMovement(0.272282,5.24316,5.21555),
-AxisMovement(1.9681,5.87669,0.394617),
-
-
-
-
+AxisMovement(5.60326,1.92285,4.89379),
+AxisMovement(5.04527,4.21002,2.80681),
+AxisMovement(0.0253107,5.26233,5.21746),
+AxisMovement(1.79898,5.68111,0.391933),
 
         },
 
         {
             //AxisMovement(DEG(90),DEG(90),DEG(90)),
             AxisMovement(DEG(23.66),DEG(180-21.45),DEG(18.95)),
-            AxisMovement(DEG(26.66),DEG(180-21.45),DEG(19.95)),
-            AxisMovement(DEG(20.66),DEG(180-21.45),DEG(18.95)),
+            AxisMovement(DEG(23.66),DEG(180-21.45),DEG(19.95)),
+            AxisMovement(DEG(21.66),DEG(180-21.45),DEG(18.95)),
             AxisMovement(DEG(23.66),DEG(180-21.45),DEG(18.95)),
         },
         {

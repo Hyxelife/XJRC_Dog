@@ -204,6 +204,13 @@ void Console::_console()
                 m_expStatus.test = false;
                 continue;
             }
+            if(buffer[0] == 'p' || buffer[0] == 'P')
+            {
+                m_pCtrl->ClearActions();
+                m_request.reqStop = true;
+                continue;
+            }
+
             char* ptr = buffer;
             std::vector<AutoCtrl::Action> actions;
             AutoCtrl::Action action;
@@ -285,6 +292,7 @@ void Console::_console()
                     printf("\t[q] quit\n");
                     printf("when system is in automatic test:\n");
                     printf("\t[x/X] quit\n");
+                    printf("\t[p/P] stop\n");
                     printf("\t[{cmd<number>;}+] make test command\n");
                     printf("\tbasic command:\n");
                     printf("\t[w<num>] move forward <num> steps\n");

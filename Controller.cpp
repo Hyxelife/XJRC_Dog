@@ -153,6 +153,7 @@ void Controller::_updateVel(float x,float y,float r,float dt)
 	m_moving = fabsf(m_outVel[X])>m_movingThres ||
 				fabsf(m_outVel[Y])>m_movingThres ||
 				fabsf(m_outVel[R])>m_movingThres;
+
     CLAMP(m_outVel[X],-1,1);
     CLAMP(m_outVel[Y],-1,1);
     CLAMP(m_outVel[R],-1,1);
