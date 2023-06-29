@@ -2486,12 +2486,12 @@
 
 1684333613 ad.h"
 
-1687959374 source:/home/robocon/XJDog/LegMotors.cpp
+1687965422 source:/home/robocon/XJDog/LegMotors.cpp
 	<iostream>
 	<fstream>
 	"Debug.h"
 
-1687959389 source:/home/robocon/XJDog/motor/motor_control.cpp
+1687964680 source:/home/robocon/XJDog/motor/motor_control.cpp
 	"../Debug.h"
 
 1679108098 source:/home/robocon/XJDog/motor/unitreeMotor.cpp
@@ -2524,7 +2524,7 @@
 	"Sensor.h"
 	"LegController.h"
 
-1687959616 source:/home/robocon/XJDog/main.cpp
+1687965342 source:/home/robocon/XJDog/main.cpp
 	<iostream>
 	<stdio.h>
 	"Console.h"
@@ -2539,7 +2539,7 @@
 	"AutoControl.h"
 	"Controller.h"
 
-1687956059 source:/home/robocon/XJDog/Console.cpp
+1688005765 source:/home/robocon/XJDog/Console.cpp
 	"Console.h"
 	<stdio.h>
 	<math.h>

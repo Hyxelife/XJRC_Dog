@@ -100,7 +100,7 @@ m_id(id)
     recv = position_get(m_serial, 2);
     m_currentAngle.armFeetIntersect = m_motorSign[2] * (recv.Pos - m_zeros.armFeetIntersect) / ms_motorScalar;
     m_currentTorque.armTorque = m_motorSign[2]*recv.T;
-    m_params.k_p = 0.1;
+    m_params.k_p = 0.05;
     m_params.k_w = 4;
 }
 
@@ -121,12 +121,12 @@ m_id(id)
 
 void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInterAngle)
 {
-    //Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
-    _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
-    //return;
+    Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
 
-    _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
-    _checkParam(m_params.k_p,m_params.k_w);
+    //return;
+    //_checkPos(shoulderAngle, armAngle, armFeetInterAngle);
+    //_checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+    //_checkParam(m_params.k_p,m_params.k_w);
 
     /*
     MOTOR_recv recv;

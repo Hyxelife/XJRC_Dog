@@ -86,9 +86,9 @@ MOTOR_send motor_run;
 
     motor_r.motorType = motor_run.motorType;
 
-    modify_data(&motor_run);
-    serial.sendRecv(&motor_run, &motor_r);
-    extract_data(&motor_r);
+    //modify_data(&motor_run);
+    //serial.sendRecv(&motor_run, &motor_r);
+    //extract_data(&motor_r);
 
     /////////////////////////////
     //motor_r.Pos = Position;

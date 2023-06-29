@@ -71,6 +71,43 @@ void* Console::consoleFunc(void* arg)
     pThis->_console();
 }
 
+int __parseNum(char* &ptr)
+{
+    int num = 0;
+    for(;*ptr >= '0' && *ptr <= '9';++ptr)
+    {
+        num *= 10;
+        num += *ptr-'0';
+    }
+    return num;
+}
+
+char *__doParse(char* ptr,AutoCtrl::Action &action)
+{
+    if(ptr == NULL)return NULL;
+    if(*ptr == '\0')return NULL;
+    char cmd = *ptr;
+    ptr = ptr+1;
+    int num = __parseNum(ptr);
+    if(*ptr != ';')return NULL;
+    ptr++;
+    action.actionCnt = num;
+    switch(cmd)
+    {
+        case 'w':action.action = AutoCtrl::run;break;
+        case 'a':action.action = AutoCtrl::moveL;break;
+        case 's':action.action = AutoCtrl::back;break;
+        case 'd':action.action = AutoCtrl::moveR;break;
+        case 'q':action.action = AutoCtrl::rotateL;break;
+        case 'e':action.action = AutoCtrl::rotateR;break;
+        case 'z':action.action = AutoCtrl::turnL;break;
+        case 'c':action.action = AutoCtrl::turnR;break;
+    }
+    return ptr;
+}
+
+char buffer[1024];
+
 void Console::_console()
 {
     char cmd;
@@ -138,7 +175,7 @@ void Console::_console()
                 printf("waiting to exit auto mode...\n"),m_prop = true;
                 continue;
             }
-            scanf("%c",&cmd);
+            scanf("%c",cmd);
             switch(cmd)
             {
                 case 'Q':
@@ -148,6 +185,7 @@ void Console::_console()
                     m_expStatus.auto_ = false;
 
                 }break;
+
             }
         }else if(m_status.test)
         {
@@ -157,32 +195,59 @@ void Console::_console()
                 printf("waiting to exit test mode...\n"),m_prop = true;
                 continue;
             }
-            scanf("%c",&cmd);
-            printf("test recv : %c\n",cmd);
-            switch(cmd)
+            scanf("%s",buffer);
+            printf("test recv : %s\n",buffer);
+            if(buffer[0] == 'x' || buffer[0] == 'X')
             {
-                case 'g':
-                {
-                    m_pCtrl->AddAction(AutoCtrl::run,10);
-                    m_pCtrl->AddAction(AutoCtrl::rotateL,4);
-                    printf("test added!\n");
-                }break;
-                case 'h':
-                {
-                    m_pCtrl->AddAction(AutoCtrl::hopToBalance,1);
-                    m_pCtrl->AddAction(AutoCtrl::climb,10);
-                    m_pCtrl->AddAction(AutoCtrl::balanceRestore,1);
-                }break;
-                case 'q':
-                case 'Q':
-                {
-                    m_pCtrl->ClearActions();
-                    m_request.reqStop = true;
-                    m_expStatus.test = false;
-                    printf("test removed!\n");
-
-                }break;
+                m_pCtrl->ClearActions();
+                m_request.reqStop = true;
+                m_expStatus.test = false;
+                continue;
             }
+            char* ptr = buffer;
+            std::vector<AutoCtrl::Action> actions;
+            AutoCtrl::Action action;
+            ptr = __doParse(ptr,action);
+            while(ptr)
+            {
+                actions.push_back(action);
+                ptr = __doParse(ptr,action);
+            }
+            printf("command check: (total command %d)\n",actions.size());
+            for(int i = 0;i<actions.size();++i)
+            {
+                switch(actions[i].action)
+                {
+                    case AutoCtrl::run:printf("run ");break;
+                    case AutoCtrl::back:printf("back ");break;
+                    case AutoCtrl::moveL:printf("moveL ");break;
+                    case AutoCtrl::moveR:printf("moveR ");break;
+                    case AutoCtrl::rotateL:printf("rotateL ");break;
+                    case AutoCtrl::rotateR:printf("rotateR ");break;
+                    case AutoCtrl::turnL:printf("turnL ");break;
+                    case AutoCtrl::turnR:printf("turnR ");break;
+                }
+                printf("%d times;\n",actions[i].actionCnt);
+            }
+            bool ok = false;
+            while(true)
+            {
+                printf("continue? y/n:\n");
+                char cmd;
+                scanf("%c",&cmd);
+                if(cmd == 'n')
+                {
+                    printf("aborted!\n");
+                    break;
+                }else if(cmd == 'y')
+                {
+                    printf("executing...\n");
+                    ok = true;
+                    break;
+                }
+            }
+            if(ok)
+                m_pCtrl->AddActions(actions);
         }else
         {
             if(m_expStatus.auto_ || m_expStatus.mannaul || m_expStatus.test)
@@ -219,13 +284,17 @@ void Console::_console()
                     printf("when system is automatically controlling:\n");
                     printf("\t[q] quit\n");
                     printf("when system is in automatic test:\n");
-                    printf("\t[s{cnt}}] start up and move {cnt} steps\n");
-                    printf("\t[r{cnt}] rotate {cnt} loops\n");
-                    printf("\t[m{cnt1},{cnt2},{cnt3}] start up ,move {cnt1} steps, turn {cnt2} loops, run{cnt3} steps\n");
-                    printf("\t[k{cnt1}] hop and move {cnt} steps\n");
-                    printf("\t[h] hop once\n");
-                    printf("\t[q] quit\n");
-
+                    printf("\t[x/X] quit\n");
+                    printf("\t[{cmd<number>;}+] make test command\n");
+                    printf("\tbasic command:\n");
+                    printf("\t[w<num>] move forward <num> steps\n");
+                    printf("\t[a<num>] move left <num> steps\n");
+                    printf("\t[s<num>] move backward <num> steps\n");
+                    printf("\t[d<num>] move right <num> steps\n");
+                    printf("\t[q<num>] rotate anticlockwise <num> steps\n");
+                    printf("\t[e<num>] rotate clockwise <num> steps\n");
+                    printf("\t[z<num>] turn left <num> steps\n");
+                    printf("\t[c<num>] turn right <num> steps\n");
                 }break;
                 case 'm':
                 case 'M':

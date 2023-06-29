@@ -11,20 +11,20 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize("./log/record.txt","./log/log.txt",NULL);//"./log/pipe.txt"
+    Debug::Initialize("./log/record.txt","./log/log.txt","./log/pipe.txt");//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
-    Console con("/dev/input/event4",&autoCtrl);
+    Console con("/dev/input/event3",&autoCtrl);
 
     Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-AxisMovement(4.9007,2.21852,4.94825),
-AxisMovement(5.09973,4.10072,2.82675),
-AxisMovement(0.224345,5.11967,5.14268),
-AxisMovement(1.90022,5.83873,0.516953),
+AxisMovement(4.97509,2.09427,4.88842),
+AxisMovement(5.09321,4.23073,2.85705),
+AxisMovement(0.272282,5.24316,5.21555),
+AxisMovement(1.9681,5.87669,0.394617),
 
 
 
@@ -59,7 +59,7 @@ AxisMovement(1.90022,5.83873,0.516953),
     planner.SetCurveHeight(9.0);
     planner.SetDogHeight(30.0f);
     planner.SetDogOffsetX(9.41f);
-    planner.SetGait(Gait::Pace(0.6f,0.08f),0);
+    planner.SetGait(Gait::Pace(0.5f,0.08f),0);
     controller.EnableVMC(false);
     OUT("[main]:params ready!starting up ...\n");
 
