@@ -15,12 +15,18 @@
 #define MASK_W          0x10
 #define MASK_E          0x20
 #define MASK_QUIT       0x40
-#define MASK_HOP        0x80
-#define MASK_STAND      0x100
-#define MASK_HOPDOWN    0x200
-#define MASK_HOPTEST    0x400
-#define MASK_RECORD     0x800
-#define MASK_SHOWRECORD 0x1000
+#define MASK_STAND      0x80
+#define MASK_RECORD     0x100
+#define MASK_SHOWRECORD 0x200
+
+#define MASK_HOPACTIVATE    0x400
+#define MASK_HOP            0x800
+#define MASK_HOPFRONT       0x1000
+#define MASK_HOPANDLEAN     0x2000
+#define MASK_HOPANDSPAN     0x4000
+#define MASK_RESTORE        0x8000
+
+
 
 void Console::_updateKeyEvents()
 {
@@ -39,10 +45,12 @@ void Console::_updateKeyEvents()
             case KEY_Q:mask = MASK_Q;break;
             case KEY_W:mask = MASK_W;break;
             case KEY_E:mask = MASK_E;break;
-            case KEY_SPACE:mask = MASK_HOP;break;
+            case KEY_SPACE:mask = MASK_HOP|MASK_HOPFRONT;break;
             case KEY_P:mask = MASK_QUIT;break;
             case KEY_F:mask = MASK_STAND;break;
-            case KEY_J:mask = MASK_HOPTEST;break;
+            case KEY_1:mask = MASK_HOP|MASK_HOPANDSPAN;break;
+            case KEY_6:mask = MASK_HOP|MASK_HOPANDLEAN;break;
+            case KEY_0:mask = MASK_HOP|MASK_RESTORE;break;
             case KEY_U:mask = MASK_RECORD;break;
             case KEY_I:mask = MASK_SHOWRECORD;break;
 
@@ -56,8 +64,8 @@ void Console::_updateKeyEvents()
             mask = mask|m_keyMask;
             //printf("%d,%d\n",mask&MASK_HOP,m_keyMask & MASK_HOP);
             if((mask & MASK_HOP) && (m_keyMask & MASK_HOP )== 0)
-                mask |= MASK_HOPDOWN;
-            else mask &= ~MASK_HOPDOWN;
+                mask |= MASK_HOPACTIVATE;
+            else mask &= ~MASK_HOPACTIVATE;
             m_keyMask = mask;
         }
     }
@@ -188,17 +196,18 @@ void Console::_console()
             else if(m_keyMask & MASK_Q) m_request.r = 1;
             else m_request.r = 0;
 
-            if(m_keyMask & MASK_HOPDOWN)
+            if(m_keyMask & MASK_HOPACTIVATE)
             {
                 m_request.reqHop = true;
-                m_request.hopType = Controller::HopForward;
-                //printf("Request Hop\n");
-                m_keyMask &= ~MASK_HOPDOWN;
-            }
-            if(m_keyMask & MASK_HOPTEST)
-            {
-                m_request.reqHop = true;
-                m_request.hopType = Controller::TestMotor;
+                if(m_keyMask & MASK_HOPFRONT)
+                    m_request.hopType = Controller::HopForward;
+                else if(m_keyMask & MASK_HOPANDLEAN)
+                    m_request.hopType = Controller::HopAndLean;
+                else if(m_keyMask & MASK_HOPANDSPAN)
+                    m_request.hopType = Controller::HopAndSpan;
+                else if(m_keyMask & MASK_RESTORE)
+                    m_request.hopType = Controller::Restore;
+                else m_request.reqHop = false;
             }
 
             if(m_keyMask & MASK_STAND)
@@ -369,7 +378,10 @@ void Console::_console()
                     printf("when system is mannually controlling:\n");
                     printf("\t[w/a/s/d] moving control\n");
                     printf("\t[q/e] rotating control\n");
-                    printf("\t[Space] hop\n");
+                    printf("\t[Space] hop forward\n");
+                    printf("\t[1] hop and span the legs\n");
+                    printf("\t[6] hop and lean\n");
+                    printf("\t[0] restore posture\n");
                     printf("\t[p] quit control\n");
                     printf("when system is automatically controlling:\n");
                     printf("\t[q] quit\n");
@@ -485,5 +497,6 @@ void Console::UpdateEvent(bool ctrlStop,bool stepOver)
             m_pCtrller->GetCurrentVelocity(action.x,action.y,action.r);
             m_record.push_back(action);
         }
+        m_keyMask &= ~(MASK_HOP|MASK_HOPACTIVATE);
     }
 }

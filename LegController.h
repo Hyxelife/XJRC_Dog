@@ -79,6 +79,7 @@ public:
     void Start(float startUpTime);
     void Exit();
     void ApplyCtrlParam(CtrlParam& param);
+    //void ApplyImmediate(CtrlParam& param);
     void SetCtrlMode(CtrlMode mode);
     void SetIMUReading(IMUReading& reading);
     bool Ready();

@@ -25,11 +25,7 @@ int main()
  AxisMovement(4.86005,2.16675,4.70933),
  AxisMovement(5.13961,4.08155,2.87622),
  AxisMovement(0.291457,5.10357,5.19254),
-  AxisMovement(1.97309,5.90431,0.469016),
-
-
-
-
+AxisMovement(1.97309,5.90431,0.469016),
 
         },
 
@@ -59,7 +55,6 @@ int main()
     PacePlanner& planner = controller.GetPacePlanner();
     planner.SetCurveHeight(9.0);
     planner.SetDogHeight(30.0f);
-    planner.SetDogOffsetX(9.41f);
     planner.SetGait(Gait::Pace(0.5f,0.08f),0);
     controller.EnableVMC(false);
     OUT("[main]:params ready!starting up ...\n");

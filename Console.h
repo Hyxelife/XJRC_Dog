@@ -19,10 +19,7 @@ class Console
         bool reqHop;
         Controller::HopType hopType;
         float x,y,r;
-    };
-    struct TestItem
-    {
-
+        float leanAngle;
     };
     protected:
     void _updateKeyEvents();
@@ -56,4 +53,6 @@ class Console
     AutoCtrl* m_pCtrl;
     Controller* m_pCtrller;
     std::vector<AutoCtrl::Action> m_record;
+
+    float m_leanAngle;
 };

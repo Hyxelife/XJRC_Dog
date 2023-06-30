@@ -10,9 +10,10 @@ class Controller
     enum HopType
     {
         HopForward,
-        TestMotor,
-        HopToBalance,
-        RestoreAngle,
+        //TestMotor,
+        HopAndLean,
+        HopAndSpan,
+        Restore,
 
     };
     struct MechParam
@@ -50,7 +51,7 @@ public:
     ~Controller();
 
     void EnableSmoothCtrl(bool enable);
-    bool Update(float velX,float velY,float velYaw,bool hop,HopType type,bool restrictHop = false,float climbAngle = 0);
+    bool Update(float velX,float velY,float velYaw,bool hop,HopType type,bool restrictHop = false);
     void EnableVMC(bool enable);
     void Start(float startUpTime);
     void Exit();
@@ -62,8 +63,10 @@ public:
     void GetCurrentVelocity(float &x,float &y,float &r);
     protected:
     void _doHop(HopType type);
-    void _hopAndBalance();
-    void _restoreAngle();
+    void _hopForward();
+    void _hopAndLean();
+    void _hopAndSpan();
+    void _restore();
     void _updateVel(float x,float y,float r,float deltaTime);
 
 protected:
@@ -88,4 +91,5 @@ protected:
     bool m_stop;
     bool m_moving;
     float m_movingThres;
+    float m_leanAngle;
 };

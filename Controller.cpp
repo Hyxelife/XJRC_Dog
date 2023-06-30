@@ -52,6 +52,7 @@ Controller::Controller(
 	m_smthCtrl = true;
 	m_needHop = m_needStop = false;
 	m_stop = true;
+	planner.SetDogOffsetX(9.41f);
 }
 
 Controller::~Controller()
@@ -159,7 +160,7 @@ void Controller::_updateVel(float x,float y,float r,float dt)
     CLAMP(m_outVel[R],-1,1);
 }
 
-bool Controller::Update(float velX, float velY, float velYaw,bool Hop,HopType type,bool restrictHop,float climbAngle)
+bool Controller::Update(float velX, float velY, float velYaw,bool Hop,HopType type,bool restrictHop)
 {
 	CLAMP(velX,-1,1);
 	CLAMP(velY,-1,1);
@@ -204,7 +205,6 @@ bool Controller::Update(float velX, float velY, float velYaw,bool Hop,HopType ty
     //printf("x:%f,y:%f,r:%f,dt:%f\n",m_outVel[Y], m_outVel[X], m_outVel[R],dt);
 	m_planner.SetVelocity(m_outVel[Y], m_outVel[X], m_outVel[R]);
 	LegController::CtrlParam param;
-	m_planner.SetClimbAngle(climbAngle);
 	bool status = m_planner.Update(dt, m_pos, m_touchStatus);
 
 	if(status)
@@ -313,16 +313,9 @@ struct HopParams
     float bz_y1,bz_z1,bz_y2,bz_z2;
 };
 
-const HopParams hopFront = {
-    .leanTime = 1.0f,.hopTime = 0.1f,.hopbackTime = 0.5f,.restTime = 1.0f,
-    .start_x = 9.41,.start_y = -4,.start_z = -15,
-    .hop_y = -10,.hop_z = -31,
-    .end_y = 5,.end_z = -20,
-    .bz_y1 = -25,.bz_z1 = -27,
-    .bz_y2 = -30,.bz_z2 = 1
-};
+
 const HopParams hopTest = {
-    .leanTime = 1.0f,.hopTime = 0.1f,.hopbackTime = 0.2f,.restTime = 1.0f,
+    .leanTime = 1.0f,.hopTime = 0.05f,.hopbackTime = 0.2f,.restTime = 1.0f,
     .start_x = 9.41,.start_y = -5,.start_z = -15,
     .hop_y = -5,.hop_z = -31,
     .end_y = -5,.end_z = -20,
@@ -332,19 +325,27 @@ const HopParams hopTest = {
 
 void Controller::_doHop(HopType type)
 {
-    const HopParams *hop = NULL;
     switch(type)
     {
-        case HopForward:hop = &hopFront;break;
-        case TestMotor:hop = &hopTest;break;
-        case HopToBalance:_hopAndBalance();return;
-        case RestoreAngle:_restoreAngle();return;
+        case HopForward:_hopForward();break;
+        //case TestMotor:hop = &hopTest;break;
+		case Restore:_restore();break;
+		case HopAndSpan:_hopAndSpan();break;
+        case HopAndLean:_hopAndBalance();return;
     }
-    printf("[Controller-Hopping]start Hop\n");
+}
 
-	//const float leanTime = 1.0f,hopTime = 0.5f,hopbackTime = 0.5f,restTime = 1.0f;
-	//const float exp_y1 = -4,exp_z1 = -15;//预备点
-	//const float exp_x1 = 9.41,exp_y2 = -10,exp_z2 = -31;//蹬腿点
+void Controller::_hopForward()
+{
+const HopParams hop = {
+    .leanTime = 1.0f,.hopTime = 0.05f,.hopbackTime = 0.5f,.restTime = 1.0f,
+    .start_x = 9.41,.start_y = -4,.start_z = -15,//预备点
+    .hop_y = -15,.hop_z = -31,//蹬腿点
+    .end_y = 5,.end_z = -20,//结束点
+    .bz_y1 = -25,.bz_z1 = -27,
+    .bz_y2 = -30,.bz_z2 = 1
+};	
+    printf("[Controller-Hopping]start Hop\n");
 
 	float timer = 0;
 	clock_t stime = clock(),etime = clock();
@@ -356,41 +357,38 @@ void Controller::_doHop(HopType type)
 		pos[i] = m_pControllers[i]->GetCurrentPosition();
 		params[i].ctrlMask = LegController::feetPos;
 	}
-    //printf("current:%.3f,%.3f,%.3f\n",pos[0].x,pos[0].y,pos[0].z);
 	printf("[Controller-Hopping]do lie down\n");
 	//lie down
-	while(timer < hop->leanTime)
+	while(timer < hop.leanTime)
 	{
-		float t = timer / hop->leanTime;
+		float t = timer / hop.leanTime;
 		for(int i = 0;i<4;++i)
 		{
 			if(i == 1 || i == 2)
-				params[i].feetPosX = pos[i].x*(1.0f-t)-t*hop->start_x;
+				params[i].feetPosX = pos[i].x*(1.0f-t)-t*hop.start_x;
 			else
-				params[i].feetPosX = pos[i].x*(1.0f-t)+t*hop->start_x;
-			params[i].feetPosY = pos[i].y*(1.0f-t)+t*hop->start_y;
-			params[i].feetPosZ = pos[i].z*(1.0f-t)+t*hop->start_z;
+				params[i].feetPosX = pos[i].x*(1.0f-t)+t*hop.start_x;
+			params[i].feetPosY = pos[i].y*(1.0f-t)+t*hop.start_y;
+			params[i].feetPosZ = pos[i].z*(1.0f-t)+t*hop.start_z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
-
-        //printf("%f\n",timer);
 		etime = clock();
 		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
 		stime = etime;
 	}
-	//char ch = getchar();
+
 	//hop
 	printf("[Controller-Hopping]do hop\n");
     timer = 0;
 	etime = stime = clock();
-	while(timer < hop->hopTime)
+	while(timer < hop.hopTime)
 	{
-        float t = timer / hop->hopTime;
+        float t = timer / hop.hopTime;
 		for(int i = 0;i<4;++i)
 		{
-			params[i].feetPosY = hop->start_y*(1.0f-t)+t*hop->hop_y;
-			params[i].feetPosZ = hop->start_z*(1.0f-t)+t*hop->hop_z;
+			params[i].feetPosY = hop.start_y*(1.0f-t)+t*hop.hop_y;
+			params[i].feetPosZ = hop.start_z*(1.0f-t)+t*hop.hop_z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -398,33 +396,21 @@ void Controller::_doHop(HopType type)
 		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
 		stime = etime;
 	}
-    //ch = getchar();
-	//hop back
-	//const float x0      = exp_y2;  //   //qi dian zuo biao
-	//const float z0      = exp_z2;
-	//const float x1      = -25;  //qi shi su du fang xiang
-	//const float z1      = -27;
-	//const float x2      = -30;   //jie shu su du fang xiang
-	//const float z2      = 1;
-	//const float x3      = 5;  //jie shu zuo biao
-	//const float z3      = -20;
 
 	timer = 0;
 	etime = stime = clock();
 	printf("[Controller-Hopping]do retrive\n");
-	while(timer < hop->hopbackTime)
+	while(timer < hop.hopbackTime)
 	{
-		float t = timer/hop->hopbackTime;
+		float t = timer/hop.hopbackTime;
 		for (int i = 0; i < 4; ++i)
 		{
-			params[i].feetPosY = hop->hop_y * (1 - t) * (1 - t) * (1 - t) +
-				3 * hop->bz_y1 * t  * (1 - t) * (1 - t) +
-				3 * hop->bz_y2 * (t) * (t ) * (1 - t ) + hop->end_y * (t) * (t) * (t);
-			params[i].feetPosZ = hop->hop_z * (1 - t) * (1 - t) * (1 - t) +
-				3 * hop->bz_z1 * t * (1 - t) * (1 - t) +
-				3 * hop->bz_z2 * (t) * (t) * (1 - t) + hop->end_z * (t) * (t) * (t);
-				//if(i == 0)
-				//printf("x=%f,y=%f,z=%f\n",params[i].feetPosX,params[i].feetPosY,params[i].feetPosZ);
+			params[i].feetPosY = hop.hop_y * (1 - t) * (1 - t) * (1 - t) +
+				3 * hop.bz_y1 * t  * (1 - t) * (1 - t) +
+				3 * hop.bz_y2 * (t) * (t ) * (1 - t ) + hop.end_y * (t) * (t) * (t);
+			params[i].feetPosZ = hop.hop_z * (1 - t) * (1 - t) * (1 - t) +
+				3 * hop.bz_z1 * t * (1 - t) * (1 - t) +
+				3 * hop.bz_z2 * (t) * (t) * (1 - t) + hop.end_z * (t) * (t) * (t);
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -432,10 +418,7 @@ void Controller::_doHop(HopType type)
 		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
 		stime = etime;
 	}
-
-
 	//touch down
-	//ch = getchar();
 	printf("[Controller-Hopping]do touch down\n");
 	LegMotors::MotorParams mt_params[4];
 	for(int i = 0;i<4;++i)
@@ -448,20 +431,20 @@ void Controller::_doHop(HopType type)
 
 	for (int i = 0; i < 4; i++)
 	{
-		params[i].feetPosY = hop->end_y;
-		params[i].feetPosZ = hop->end_z;
+		params[i].feetPosY = hop.end_y;
+		params[i].feetPosZ = hop.end_z;
 		if(enableMap[i])
 		m_pControllers[i]->ApplyCtrlParam(params[i]);
 	}
 
     timer = 0;etime = stime = clock();
-	while(timer < hop->restTime)
+	while(timer < hop.restTime)
 	{
-		float t = timer / hop->restTime;
+		float t = timer / hop.restTime;
 		for(int i = 0;i<4;++i)
 		{
-			params[i].feetPosY = hop->end_y*(1.0f-t)+t*pos[i].y;
-			params[i].feetPosZ = hop->end_z*(1.0f-t)+t*pos[i].z;
+			params[i].feetPosY = hop.end_y*(1.0f-t)+t*pos[i].y;
+			params[i].feetPosZ = hop.end_z*(1.0f-t)+t*pos[i].z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -484,7 +467,7 @@ void Controller::_doHop(HopType type)
     printf("[Controller-Hopping]end hop\n");
 }
 
-void Controller::_hopAndBalance()
+void Controller::_hopAndLean()
 {
     std::vector<FeetMovement> posVec(4);
     std::vector<bool> preserve(4);
@@ -517,17 +500,17 @@ void Controller::_hopAndBalance()
 
 	printf("[Controller-HopWithAngle]do lie down\n");
 	//lie down
-	while(timer < hop->leanTime)
+	while(timer < hop.leanTime)
 	{
-		float t = timer / hop->leanTime;
+		float t = timer / hop.leanTime;
 		for(int i = 0;i<4;++i)
 		{
 			if(i == 1 || i == 2)
-				params[i].feetPosX = pos[i].x*(1.0f-t)-t*hop->start_x;
+				params[i].feetPosX = pos[i].x*(1.0f-t)-t*hop.start_x;
 			else
-				params[i].feetPosX = pos[i].x*(1.0f-t)+t*hop->start_x;
-			params[i].feetPosY = pos[i].y*(1.0f-t)+t*hop->start_y;
-			params[i].feetPosZ = pos[i].z*(1.0f-t)+t*hop->start_z;
+				params[i].feetPosX = pos[i].x*(1.0f-t)+t*hop.start_x;
+			params[i].feetPosY = pos[i].y*(1.0f-t)+t*hop.start_y;
+			params[i].feetPosZ = pos[i].z*(1.0f-t)+t*hop.start_z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -541,13 +524,13 @@ void Controller::_hopAndBalance()
 	printf("[Controller-HopWithAngle]do hop\n");
     timer = 0;
 	etime = stime = clock();
-	while(timer < hop->hopTime)
+	while(timer < hop.hopTime)
 	{
-        float t = timer / hop->hopTime;
+        float t = timer / hop.hopTime;
 		for(int i = 0;i<4;++i)
 		{
-			params[i].feetPosY = hop->start_y*(1.0f-t)+t*hop->hop_y;
-			params[i].feetPosZ = hop->start_z*(1.0f-t)+t*hop->hop_z;
+			params[i].feetPosY = hop.start_y*(1.0f-t)+t*hop.hop_y;
+			params[i].feetPosZ = hop.start_z*(1.0f-t)+t*hop.hop_z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -559,19 +542,17 @@ void Controller::_hopAndBalance()
 	etime = stime = clock();
 
 	printf("[Controller-HopWithAngle]do retrive\n");
-	while(timer < hop->hopbackTime)
+	while(timer < hop.hopbackTime)
 	{
-		float t = timer/hop->hopbackTime;
+		float t = timer/hop.hopbackTime;
 		for (int i = 0; i < 4; ++i)
 		{
-			params[i].feetPosY = hop->hop_y * (1 - t) * (1 - t) * (1 - t) +
-				3 * hop->bz_y1 * t  * (1 - t) * (1 - t) +
-				3 * hop->bz_y2 * (t) * (t ) * (1 - t ) + hop->end_y * (t) * (t) * (t);
-			params[i].feetPosZ = hop->hop_z * (1 - t) * (1 - t) * (1 - t) +
-				3 * hop->bz_z1 * t * (1 - t) * (1 - t) +
-				3 * hop->bz_z2 * (t) * (t) * (1 - t) + hop->end_z * (t) * (t) * (t);
-				//if(i == 0)
-				//printf("x=%f,y=%f,z=%f\n",params[i].feetPosX,params[i].feetPosY,params[i].feetPosZ);
+			params[i].feetPosY = hop.hop_y * (1 - t) * (1 - t) * (1 - t) +
+				3 * hop.bz_y1 * t  * (1 - t) * (1 - t) +
+				3 * hop.bz_y2 * (t) * (t ) * (1 - t ) + hop.end_y * (t) * (t) * (t);
+			params[i].feetPosZ = hop.hop_z * (1 - t) * (1 - t) * (1 - t) +
+				3 * hop.bz_z1 * t * (1 - t) * (1 - t) +
+				3 * hop.bz_z2 * (t) * (t) * (1 - t) + hop.end_z * (t) * (t) * (t);
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -579,7 +560,6 @@ void Controller::_hopAndBalance()
 		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
 		stime = etime;
 	}
-
 
 	//touch down
 	printf("[Controller-HopWithAngle]do touch down\n");
@@ -594,21 +574,21 @@ void Controller::_hopAndBalance()
 
 	for (int i = 0; i < 4; i++)
 	{
-		params[i].feetPosY = hop->end_y;
-		params[i].feetPosZ = hop->end_z;
+		params[i].feetPosY = hop.end_y;
+		params[i].feetPosZ = hop.end_z;
 		if(enableMap[i])
 		m_pControllers[i]->ApplyCtrlParam(params[i]);
 	}
 
     printf("[Controller-HopWithAngle]do resting\n");
     timer = 0;etime = stime = clock();
-	while(timer < hop->restTime)
+	while(timer < hop.restTime)
 	{
-		float t = timer / hop->restTime;
+		float t = timer / hop.restTime;
 		for(int i = 0;i<4;++i)
 		{
-			params[i].feetPosY = hop->end_y*(1.0f-t)+t*posVec[i].y;
-			params[i].feetPosZ = hop->end_z*(1.0f-t)+t*posVec[i].z;
+			params[i].feetPosY = hop.end_y*(1.0f-t)+t*posVec[i].y;
+			params[i].feetPosZ = hop.end_z*(1.0f-t)+t*posVec[i].z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -631,7 +611,7 @@ void Controller::_hopAndBalance()
     printf("[Controller-HopWithAngle]end hop\n");
 }
 
-void Controller::_restoreAngle()
+void Controller::_restore()
 {
     std::vector<FeetMovement> pos_old(4),pos_new(4);
     std::vector<bool> preserve(4);
@@ -645,6 +625,7 @@ void Controller::_restoreAngle()
 	}
     m_planner.Reset();
     m_planner.SetClimbAngle(0);
+	m_planner.SetDogOffsetX(9.41);
     m_planner.Update(0,pos_new,preserve);
     printf("[Controller-restore]:start lerp\n");
     float lerpTime = 1.0f;
@@ -667,6 +648,189 @@ void Controller::_restoreAngle()
 		stime = etime;
 	}
 	printf("[Controller-restore]:end lerp\n");
+}
+
+void Controller::_hopAndSpan()
+{
+    std::vector<FeetMovement> posVec(4);
+    std::vector<bool> preserve(4);
+    //m_planner.SetDogOffsetX(15.0*180.0/3.141592653589);
+    m_planner.Reset();
+    m_planner.Update(0,posVec,preserve);
+    HopParams hopParam = {
+        .leanTime = 1.0f,.hopTime = 5.0f,.hopbackTime = 5.0f,.restTime = 1.0f,
+        .start_x = 9.41,.start_y = -5,.start_z = -15,
+        .hop_y = -10,.hop_z = -31,
+        .end_y = posVec[0].y,.end_z = posVec[0].z+5,
+        .bz_y1 = -25,.bz_z1 = -27,
+        .bz_y2 = -30,.bz_z2 = 1
+    };
+    HopParams *hop = &hopParam;
+    printf("[Controller-HopWithAngle]:start\n");
+
+
+	float timer = 0;
+	clock_t stime = clock(),etime = clock();
+	FeetMovement pos[4];
+	LegController::CtrlParam params[4];
+	for(int i = 0;i<4;++i)
+	{
+        if(enableMap[i])
+		pos[i] = m_pControllers[i]->GetCurrentPosition();
+		params[i].ctrlMask = LegController::feetPos;
+	}
+
+
+	printf("[Controller-HopWithAngle]do lie down\n");
+	//lie down
+	while(timer < hop.leanTime)
+	{
+		float t = timer / hop.leanTime;
+		for(int i = 0;i<4;++i)
+		{
+			if(i == 1 || i == 2)
+				params[i].feetPosX = pos[i].x*(1.0f-t)-t*hop.start_x;
+			else
+				params[i].feetPosX = pos[i].x*(1.0f-t)+t*hop.start_x;
+			params[i].feetPosY = pos[i].y*(1.0f-t)+t*hop.start_y;
+			params[i].feetPosZ = pos[i].z*(1.0f-t)+t*hop.start_z;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+		etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
+
+
+	//hop
+	printf("[Controller-HopWithAngle]do hop\n");
+    timer = 0;
+	etime = stime = clock();
+	while(timer < hop.hopTime)
+	{
+        float t = timer / hop.hopTime;
+		for(int i = 0;i<4;++i)
+		{
+			params[i].feetPosY = hop.start_y*(1.0f-t)+t*hop.hop_y;
+			params[i].feetPosZ = hop.start_z*(1.0f-t)+t*hop.hop_z;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+        etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
+	timer = 0;
+	etime = stime = clock();
+
+	printf("[Controller-HopWithAngle]do retrive\n");
+	while(timer < hop.hopbackTime)
+	{
+		float t = timer/hop.hopbackTime;
+		for (int i = 0; i < 4; ++i)
+		{
+			params[i].feetPosY = hop.hop_y * (1 - t) * (1 - t) * (1 - t) +
+				3 * hop.bz_y1 * t  * (1 - t) * (1 - t) +
+				3 * hop.bz_y2 * (t) * (t ) * (1 - t ) + hop.end_y * (t) * (t) * (t);
+			params[i].feetPosZ = hop.hop_z * (1 - t) * (1 - t) * (1 - t) +
+				3 * hop.bz_z1 * t * (1 - t) * (1 - t) +
+				3 * hop.bz_z2 * (t) * (t) * (1 - t) + hop.end_z * (t) * (t) * (t);
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+		etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
+
+	//touch down
+	printf("[Controller-HopWithAngle]do touch down\n");
+	LegMotors::MotorParams mt_params[4];
+	for(int i = 0;i<4;++i)
+	{
+        if(enableMap[i])
+		mt_params[i] = m_pControllers[i]->GetMotors()->GetMotorParams();
+		if(enableMap[i])
+		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.1,2));
+	}
+
+	for (int i = 0; i < 4; i++)
+	{
+		params[i].feetPosY = hop.end_y;
+		params[i].feetPosZ = hop.end_z;
+		if(enableMap[i])
+		m_pControllers[i]->ApplyCtrlParam(params[i]);
+	}
+
+    printf("[Controller-HopWithAngle]do resting\n");
+    timer = 0;etime = stime = clock();
+	while(timer < hop.restTime)
+	{
+		float t = timer / hop.restTime;
+		for(int i = 0;i<4;++i)
+		{
+			params[i].feetPosY = hop.end_y*(1.0f-t)+t*posVec[i].y;
+			params[i].feetPosZ = hop.end_z*(1.0f-t)+t*posVec[i].z;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+
+        //printf("%f\n",timer);
+		etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
+
+
+	for(int i = 0;i<4;++i)
+	{
+        if(enableMap[i])
+		m_pControllers[i]->GetMotors()->SetMotorParams(mt_params[i]);
+    }
+
+    m_time = -1;
+	m_planner.Reset();
+    printf("[Controller-HopWithAngle]end hop\n");
+}
+
+void Controller::_restore()
+{
+    std::vector<FeetMovement> pos_old(4),pos_new(4);
+    std::vector<bool> preserve(4);
+	LegController::CtrlParam params[4];
+	for(int i = 0;i<4;++i)
+	{
+        if(enableMap[i])
+		pos_old[i] = m_pControllers[i]->GetCurrentPosition();
+		params[i].ctrlMask = LegController::feetPos;
+		params[i].feetPosX = pos_old[i].x;
+	}
+    m_planner.Reset();
+    m_planner.SetClimbAngle(0);
+	m_planner.SetDogOffsetX(9.41);
+    m_planner.Update(0,pos_new,preserve);
+    printf("[Controller-restore]:start lerp\n");
+    float lerpTime = 1.0f;
+    float timer = 0;
+    clock_t etime = clock(),stime = clock();
+	while(timer < lerpTime)
+	{
+		float t = timer / lerpTime;
+		for(int i = 0;i<4;++i)
+		{
+			params[i].feetPosY = pos_old[i].y*(1.0f-t)+t*pos_new[i].y;
+			params[i].feetPosZ = pos_old[i].z*(1.0f-t)+t*pos_new[i].z;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+
+        //printf("%f\n",timer);
+		etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
+	printf("[Controller-restore]:end lerp\n");	
 }
 
 
