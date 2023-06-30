@@ -64,7 +64,10 @@ void Console::_updateKeyEvents()
             mask = mask|m_keyMask;
             //printf("%d,%d\n",mask&MASK_HOP,m_keyMask & MASK_HOP);
             if((mask & MASK_HOP) && (m_keyMask & MASK_HOP )== 0)
+            {
+                printf("activate!\n");
                 mask |= MASK_HOPACTIVATE;
+                }
             else mask &= ~MASK_HOPACTIVATE;
             m_keyMask = mask;
         }
@@ -168,6 +171,7 @@ void Console::_console()
     char cmd;
     while(!m_threadQuit)
     {
+        usleep(1000);
         if(m_status.mannaul)
         {
             //printf("mannual\n");
@@ -481,12 +485,12 @@ void Console::UpdateEvent(bool ctrlStop,bool stepOver)
           m_status.quit != m_expStatus.quit ||
           m_status.test != m_expStatus.test)
         {
-        m_status = m_expStatus;
-        printf("[Console]:mode changed!\n");
-        printf("mannaul:%d,auto:%d,test:%d,quit:%d\n",m_status.mannaul,m_status.auto_,m_status.test,m_status.quit);
-        m_prop = false;
-        m_keyMask = 0;
-        fflush(stdin);
+            m_status = m_expStatus;
+            printf("[Console]:mode changed!\n");
+            printf("mannaul:%d,auto:%d,test:%d,quit:%d\n",m_status.mannaul,m_status.auto_,m_status.test,m_status.quit);
+            m_prop = false;
+            m_keyMask = 0;
+            fflush(stdin);
         }
     }
     if(stepOver)
@@ -497,6 +501,13 @@ void Console::UpdateEvent(bool ctrlStop,bool stepOver)
             m_pCtrller->GetCurrentVelocity(action.x,action.y,action.r);
             m_record.push_back(action);
         }
-        m_keyMask &= ~(MASK_HOP|MASK_HOPACTIVATE);
+
     }
+}
+
+void Console::GetConsoleRequest(Console::ConsoleRequest &request)
+{
+    request = m_request;
+    m_request.reqHop = m_request.reqStop = false;
+    m_keyMask &= ~(MASK_HOP|MASK_HOPACTIVATE);
 }

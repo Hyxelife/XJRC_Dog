@@ -121,6 +121,10 @@ m_id(id)
 
 void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInterAngle)
 {
+    //_checkPos(shoulderAngle, armAngle, armFeetInterAngle);
+    //_checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+    //_checkParam(m_params.k_p,m_params.k_w);
+
     Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
 
     return;

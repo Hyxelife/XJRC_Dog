@@ -46,7 +46,7 @@ AxisMovement(1.97309,5.90431,0.469016),
         Controller::CtrlInitParam(0.5,5,14,14,0.3,0.01),
         Controller::MechParam(15+9.41f+9.41f,41)
     );
-    Console con("/dev/input/event4",&autoCtrl,&controller);
+    Console con("/dev/input/event11",&autoCtrl,&controller);
     OUT("[main]:system ready!\n");
 
 
@@ -104,11 +104,14 @@ AxisMovement(1.97309,5.90431,0.469016),
 
             autoCtrl.GetAutoCtrlParam(autoPar);
             //printf("%f,%f,%f\n",autoPar.x,autoPar.y,autoPar.r);
-            if(controller.Update(autoPar.x,autoPar.y,autoPar.r,autoPar.hop,autoPar.hopType,true,autoPar.angle))
+            if(controller.Update(autoPar.x,autoPar.y,autoPar.r,autoPar.hop,autoPar.hopType,true))
                 autoCtrl.UpdateStep();
             stepOver = false;
         }else
+        {
+            if(req.reqHop)printf("hopping...\n");
             stepOver = controller.Update(req.x,req.y,req.r,req.reqHop,req.hopType,true);
+        }
         //printf("update\n");
         if(req.reqStop)
         {

@@ -52,7 +52,7 @@ Controller::Controller(
 	m_smthCtrl = true;
 	m_needHop = m_needStop = false;
 	m_stop = true;
-	planner.SetDogOffsetX(9.41f);
+	m_planner.SetDogOffsetX(9.41f);
 }
 
 Controller::~Controller()
@@ -313,16 +313,6 @@ struct HopParams
     float bz_y1,bz_z1,bz_y2,bz_z2;
 };
 
-
-const HopParams hopTest = {
-    .leanTime = 1.0f,.hopTime = 0.05f,.hopbackTime = 0.2f,.restTime = 1.0f,
-    .start_x = 9.41,.start_y = -5,.start_z = -15,
-    .hop_y = -5,.hop_z = -31,
-    .end_y = -5,.end_z = -20,
-    .bz_y1 = -5,.bz_z1 = -27,
-    .bz_y2 = -5,.bz_z2 = 1
-};
-
 void Controller::_doHop(HopType type)
 {
     switch(type)
@@ -331,20 +321,20 @@ void Controller::_doHop(HopType type)
         //case TestMotor:hop = &hopTest;break;
 		case Restore:_restore();break;
 		case HopAndSpan:_hopAndSpan();break;
-        case HopAndLean:_hopAndBalance();return;
+        case HopAndLean:_hopAndLean();return;
     }
 }
 
 void Controller::_hopForward()
 {
 const HopParams hop = {
-    .leanTime = 1.0f,.hopTime = 0.05f,.hopbackTime = 0.5f,.restTime = 1.0f,
+    .leanTime = 1.0f,.hopTime = 0.01f,.hopbackTime = 0.2f,.restTime = 0.5f,
     .start_x = 9.41,.start_y = -4,.start_z = -15,//预备点
-    .hop_y = -15,.hop_z = -31,//蹬腿点
+    .hop_y = -15,.hop_z = -38,//蹬腿点
     .end_y = 5,.end_z = -20,//结束点
     .bz_y1 = -25,.bz_z1 = -27,
     .bz_y2 = -30,.bz_z2 = 1
-};	
+};
     printf("[Controller-Hopping]start Hop\n");
 
 	float timer = 0;
@@ -471,18 +461,17 @@ void Controller::_hopAndLean()
 {
     std::vector<FeetMovement> posVec(4);
     std::vector<bool> preserve(4);
-    m_planner.SetClimbAngle(15.0*180.0/3.141592653589);
+    m_planner.SetClimbAngle(15.0/180.0*3.141592653589);
     m_planner.Reset();
     m_planner.Update(0,posVec,preserve);
-    HopParams hopParam = {
-        .leanTime = 1.0f,.hopTime = 5.0f,.hopbackTime = 5.0f,.restTime = 1.0f,
+    const HopParams hop = {
+        .leanTime = 1.0f,.hopTime = 0.01f,.hopbackTime = 0.2f,.restTime = 0.5f,
         .start_x = 9.41,.start_y = -5,.start_z = -15,
-        .hop_y = -10,.hop_z = -31,
+        .hop_y = -25,.hop_z = -35,
         .end_y = posVec[0].y,.end_z = posVec[0].z+5,
-        .bz_y1 = -25,.bz_z1 = -27,
-        .bz_y2 = -30,.bz_z2 = 1
+        .bz_y1 = -25.3,.bz_z1 = -25.1,
+        .bz_y2 = -23.3,.bz_z2 = -10
     };
-    HopParams *hop = &hopParam;
     printf("[Controller-HopWithAngle]:start\n");
 
 
@@ -657,7 +646,7 @@ void Controller::_hopAndSpan()
     //m_planner.SetDogOffsetX(15.0*180.0/3.141592653589);
     m_planner.Reset();
     m_planner.Update(0,posVec,preserve);
-    HopParams hopParam = {
+    const HopParams hop = {
         .leanTime = 1.0f,.hopTime = 5.0f,.hopbackTime = 5.0f,.restTime = 1.0f,
         .start_x = 9.41,.start_y = -5,.start_z = -15,
         .hop_y = -10,.hop_z = -31,
@@ -665,7 +654,6 @@ void Controller::_hopAndSpan()
         .bz_y1 = -25,.bz_z1 = -27,
         .bz_y2 = -30,.bz_z2 = 1
     };
-    HopParams *hop = &hopParam;
     printf("[Controller-HopWithAngle]:start\n");
 
 
@@ -793,46 +781,3 @@ void Controller::_hopAndSpan()
 	m_planner.Reset();
     printf("[Controller-HopWithAngle]end hop\n");
 }
-
-void Controller::_restore()
-{
-    std::vector<FeetMovement> pos_old(4),pos_new(4);
-    std::vector<bool> preserve(4);
-	LegController::CtrlParam params[4];
-	for(int i = 0;i<4;++i)
-	{
-        if(enableMap[i])
-		pos_old[i] = m_pControllers[i]->GetCurrentPosition();
-		params[i].ctrlMask = LegController::feetPos;
-		params[i].feetPosX = pos_old[i].x;
-	}
-    m_planner.Reset();
-    m_planner.SetClimbAngle(0);
-	m_planner.SetDogOffsetX(9.41);
-    m_planner.Update(0,pos_new,preserve);
-    printf("[Controller-restore]:start lerp\n");
-    float lerpTime = 1.0f;
-    float timer = 0;
-    clock_t etime = clock(),stime = clock();
-	while(timer < lerpTime)
-	{
-		float t = timer / lerpTime;
-		for(int i = 0;i<4;++i)
-		{
-			params[i].feetPosY = pos_old[i].y*(1.0f-t)+t*pos_new[i].y;
-			params[i].feetPosZ = pos_old[i].z*(1.0f-t)+t*pos_new[i].z;
-			if(enableMap[i])
-			m_pControllers[i]->ApplyCtrlParam(params[i]);
-		}
-
-        //printf("%f\n",timer);
-		etime = clock();
-		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
-		stime = etime;
-	}
-	printf("[Controller-restore]:end lerp\n");	
-}
-
-
-
-

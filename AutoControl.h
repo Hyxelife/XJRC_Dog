@@ -37,7 +37,6 @@ public:
     {
         float x,y,r;
         bool hop;
-        float angle;
         Controller::HopType hopType;
         bool stop;
     };

@@ -36,7 +36,7 @@ class Console
 
     void UpdateEvent(bool ctrlStop,bool stepOver);
 
-    void GetConsoleRequest(ConsoleRequest& request){request = m_request;m_request.reqHop = m_request.reqStop = false;}
+    void GetConsoleRequest(ConsoleRequest& request);
     void GetConsoleStatus(ConsoleStatus& status){status = m_status;}
 
     protected:

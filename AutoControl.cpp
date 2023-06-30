@@ -28,26 +28,25 @@ void AutoCtrl::UpdateStep()
         ActionType type = m_actions.front().action;
         switch(type)
         {
-            case run:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;m_param.angle = 0;}break;
-            case back:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = -1;m_param.angle = 0;}break;
-            case stop:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;}break;
-            case turnR:{m_param.hop = false;m_param.r = -0.5;m_param.x = 0;m_param.y = 0.8;m_param.angle = 0;}break;
-            case turnL:{m_param.hop = false;m_param.r = 0.5;m_param.x = 0;m_param.y = 0.8;m_param.angle = 0;}break;
-            case rotateR:{m_param.hop = false;m_param.r = -0.5;m_param.x = m_param.y = 0;m_param.angle = 0;}break;
-            case rotateL:{m_param.hop = false;m_param.r = 0.5;m_param.x = m_param.y = 0;m_param.angle = 0;}break;
-            case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;m_param.angle = 0;}break;
-            case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;m_param.angle = 0;}break;
-            case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::HopForward;}break;
-            case hopToBalance:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::HopToBalance;}break;
-            case balanceRestore:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::RestoreAngle;}break;
-            case climb:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;m_param.angle = 15.0/180.0*3.1415926;}break;
+            case run:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;}break;
+            case back:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = -1;}break;
+            case stop:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;}break;
+            case turnR:{m_param.hop = false;m_param.r = -0.5;m_param.x = 0;m_param.y = 0.8;}break;
+            case turnL:{m_param.hop = false;m_param.r = 0.5;m_param.x = 0;m_param.y = 0.8;}break;
+            case rotateR:{m_param.hop = false;m_param.r = -0.5;m_param.x = m_param.y = 0;}break;
+            case rotateL:{m_param.hop = false;m_param.r = 0.5;m_param.x = m_param.y = 0;}break;
+            case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;}break;
+            case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;}break;
+            case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::HopForward;}break;
+            case hopToBalance:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::HopAndLean;}break;
+            case balanceRestore:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::Restore;}break;
+            case climb:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;}break;
             case record:{
                 m_param.hop = false;
                 Action &act = m_actions.front();
                 m_param.x = act.x;
                 m_param.y = act.y;
                 m_param.r = act.r;
-                m_param.angle = 0;
             }break;
         }
         switch(type)
