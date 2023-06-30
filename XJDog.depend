@@ -2524,7 +2524,7 @@
 	"Sensor.h"
 	"LegController.h"
 
-1688098570 source:/home/robocon/XJDog/main.cpp
+1688105940 source:/home/robocon/XJDog/main.cpp
 	<iostream>
 	<stdio.h>
 	"Console.h"
@@ -5106,7 +5106,7 @@
 	<fcntl.h>
 	<unistd.h>
 
-1688097822 source:/home/robocon/XJDog/Record.cpp
+1688105987 source:/home/robocon/XJDog/Record.cpp
 	"AutoControl.h"
 
 1688097784 /home/robocon/XJDog/Record.h

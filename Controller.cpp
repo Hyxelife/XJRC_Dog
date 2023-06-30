@@ -322,7 +322,7 @@ const HopParams hopFront = {
     .bz_y2 = -30,.bz_z2 = 1
 };
 const HopParams hopTest = {
-    .leanTime = 1.0f,.hopTime = 0.5f,.hopbackTime = 0.5f,.restTime = 1.0f,
+    .leanTime = 1.0f,.hopTime = 0.1f,.hopbackTime = 0.2f,.restTime = 1.0f,
     .start_x = 9.41,.start_y = -5,.start_z = -15,
     .hop_y = -5,.hop_z = -31,
     .end_y = -5,.end_z = -20,

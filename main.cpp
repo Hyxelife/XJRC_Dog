@@ -50,7 +50,7 @@ int main()
         Controller::CtrlInitParam(0.5,5,14,14,0.3,0.01),
         Controller::MechParam(15+9.41f+9.41f,41)
     );
-    Console con("/dev/input/event12",&autoCtrl,&controller);
+    Console con("/dev/input/event4",&autoCtrl,&controller);
     OUT("[main]:system ready!\n");
 
 
