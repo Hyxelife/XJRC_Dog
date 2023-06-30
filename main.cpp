@@ -11,11 +11,11 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize(NULL,"./log/log.txt",NULL);//"./log/pipe.txt"
+    Debug::Initialize(NULL,"./log/log.txt","./log/pipe.txt");//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
-    Console con("/dev/input/event11",&autoCtrl);
+
 
     Connector connector(Connector::speed,&autoCtrl);
     Controller controller(
@@ -50,7 +50,7 @@ int main()
         Controller::CtrlInitParam(0.5,5,14,14,0.3,0.01),
         Controller::MechParam(15+9.41f+9.41f,41)
     );
-
+    Console con("/dev/input/event12",&autoCtrl,&controller);
     OUT("[main]:system ready!\n");
 
 
@@ -75,6 +75,9 @@ int main()
     //while(1);
     bool sysQuit = false;
     bool connectStart = false;
+    bool stepOver = false;
+
+    long long debugCnt = 0;
     while(!sysQuit)
     {
         /////////////test area//////////////////////
@@ -85,12 +88,17 @@ int main()
     //OUT("loop\n");
         con.GetConsoleRequest(req);
         con.GetConsoleStatus(status);
+        //if(debugCnt++ == 100000000)
+        //{
+        //    printf("out -> mannaul:%d,auto:%d,test:%d,quit:%d\n",status.mannaul,status.auto_,status.test,status.quit);
+        //    debugCnt = 0;
+        //}
         if(status.auto_ || status.test)
         {
             //TODO
             if(status.auto_)
             {
-                if(!connectStart)
+                if(!connectStart && false)
                 {
                     connector.Start();
                     connectStart = true;
@@ -100,19 +108,19 @@ int main()
                 controller.StopMoving();
 
             autoCtrl.GetAutoCtrlParam(autoPar);
-            if(autoPar.hop)
-                int j = 100;
+            //printf("%f,%f,%f\n",autoPar.x,autoPar.y,autoPar.r);
             if(controller.Update(autoPar.x,autoPar.y,autoPar.r,autoPar.hop,autoPar.hopType,true,autoPar.angle))
                 autoCtrl.UpdateStep();
+            stepOver = false;
         }else
-            controller.Update(req.x,req.y,req.r,req.reqHop,req.hopType,true);
+            stepOver = controller.Update(req.x,req.y,req.r,req.reqHop,req.hopType,true);
         //printf("update\n");
         if(req.reqStop)
         {
             controller.StopMoving();
             //printf("req stop\n");
             }
-        con.UpdateEvent(controller.IsStop());
+        con.UpdateEvent(controller.IsStop(),stepOver);
         sysQuit = status.quit;
 
     }

@@ -265,6 +265,13 @@ bool Controller::Update(float velX, float velY, float velYaw,bool Hop,HopType ty
 	return status;
 }
 
+void Controller::GetCurrentVelocity(float &x,float &y,float &r)
+{
+    x = m_outVel[X];
+    y = m_outVel[Y];
+    r = m_outVel[R];
+}
+
 void Controller::StartMoving()
 {
     //printf("sm\n");

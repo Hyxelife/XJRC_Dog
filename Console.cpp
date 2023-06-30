@@ -4,6 +4,8 @@
 #include <linux/input.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include "Debug.h"
+#include "Record.h"
 
 ////////////key masks///////////////
 #define MASK_A          0x01
@@ -17,6 +19,8 @@
 #define MASK_STAND      0x100
 #define MASK_HOPDOWN    0x200
 #define MASK_HOPTEST    0x400
+#define MASK_RECORD     0x800
+#define MASK_SHOWRECORD 0x1000
 
 void Console::_updateKeyEvents()
 {
@@ -39,6 +43,9 @@ void Console::_updateKeyEvents()
             case KEY_P:mask = MASK_QUIT;break;
             case KEY_F:mask = MASK_STAND;break;
             case KEY_J:mask = MASK_HOPTEST;break;
+            case KEY_U:mask = MASK_RECORD;break;
+            case KEY_I:mask = MASK_SHOWRECORD;break;
+
         }
         if(!mask)return;
         if(key_info.value == 0)
@@ -82,11 +89,49 @@ int __parseNum(char* &ptr)
     return num;
 }
 
+float __parseFloat(char* &ptr)
+{
+    int num = 0,dot = -1,sign = 1;
+    float result = 0;
+    for(;(*ptr >= '0' && *ptr <= '9') || *ptr == '-' || *ptr == '.';++ptr)
+    {
+        if(*ptr == '-')
+        {
+            if(num)return 0;
+            sign = -1;
+        }else if(*ptr == '.')
+        {
+            if(dot != -1)return 0;
+            dot = 0;
+        }else
+        {
+            if(dot != -1)dot++;
+            num *= 10;
+            num += *ptr -'0';
+        }
+    }
+    result = num;
+    for(int i = 0;i<dot;++i)result /= 10.0;
+    return result;
+}
+
 char *__doParse(char* ptr,AutoCtrl::Action &action)
 {
     if(ptr == NULL)return NULL;
     if(*ptr == '\0')return NULL;
     char cmd = *ptr;
+    if(cmd == 'u')
+    {
+        ptr++;
+        action.x = __parseFloat(ptr);
+        ptr++;
+        action.y = __parseFloat(ptr);
+        ptr++;
+        action.r = __parseFloat(ptr);
+        action.actionCnt = 1;
+        action.action = AutoCtrl::record;
+        return ptr+1;
+    }
     ptr = ptr+1;
     int num = __parseNum(ptr);
     if(*ptr != ';')return NULL;
@@ -107,6 +152,8 @@ char *__doParse(char* ptr,AutoCtrl::Action &action)
 }
 
 char buffer[1024];
+
+
 
 void Console::_console()
 {
@@ -165,6 +212,27 @@ void Console::_console()
                 m_expStatus.quit = false;
                 m_keyMask = 0;
             }
+            if(m_keyMask & MASK_RECORD)
+            {
+                if(!m_recording)
+                {
+                    printf("\n[Console] start recording...\n");
+                    m_recording = true;
+                    m_record.clear();
+                }
+            }
+            if(m_keyMask & MASK_SHOWRECORD)
+            {
+                if(m_recording)
+                {
+                    m_recording = false;
+                    OUT("\n[Console]: showing the record result:\n");
+                    for(int i = 0;i<m_record.size();++i)
+                        OUT("pCtrl->AddRecord(%.3f,%.3f,%.3f);\n",m_record[i].x,m_record[i].y,m_record[i].r);
+                    OUT("\n[Console]: end of the record\n");
+                    m_request.reqStop = true;
+                }
+            }
             //printf("\nmask:%d\n",m_keyMask);
 
         }else if(m_status.auto_)
@@ -175,12 +243,27 @@ void Console::_console()
                 printf("waiting to exit auto mode...\n"),m_prop = true;
                 continue;
             }
-            scanf("%c",cmd);
+            scanf("%c",&cmd);
             switch(cmd)
             {
+                case 'r':
+                case 'R':
+                {
+                    printf("[Console] using records ...\n");
+                    Record(m_pCtrl);
+
+                }break;
+                case 'x':
+                case 'X':
+                {
+                    printf("[Console] Abort!\n");
+                    m_pCtrl->ClearActions();
+                    m_request.reqStop = true;
+                }break;
                 case 'Q':
                 case 'q':
                 {
+                    m_pCtrl->ClearActions();
                     m_request.reqStop = true;
                     m_expStatus.auto_ = false;
 
@@ -303,6 +386,7 @@ void Console::_console()
                     printf("\t[e<num>] rotate clockwise <num> steps\n");
                     printf("\t[z<num>] turn left <num> steps\n");
                     printf("\t[c<num>] turn right <num> steps\n");
+                    printf("\t[u<num>,<num>,<num>] record control,x,y,r\n");
                 }break;
                 case 'm':
                 case 'M':
@@ -334,15 +418,11 @@ void Console::_console()
     printf("[Console]:system quit!\n");
 }
 
-Console::Console(const char* strKeyEvent,AutoCtrl* pCtrl)
+Console::Console(const char* strKeyEvent,AutoCtrl* pCtrl,Controller* pCtrller)
 {
-    m_eventFd = open(strKeyEvent,O_RDONLY,0777);
-    if(m_eventFd < 0)
-    {
-        printf("[Console]:cannot open event device\n");
-        return;
-    }
+
     m_pCtrl = pCtrl;
+    m_pCtrller = pCtrller;
     //m_event.open(strKeyEvent);
 
 
@@ -354,6 +434,10 @@ Console::Console(const char* strKeyEvent,AutoCtrl* pCtrl)
     m_expStatus.auto_ = m_expStatus.mannaul =m_expStatus.quit= m_expStatus.test= false;
     m_keyMask = 0;
     m_prop = false;
+
+    m_eventFd = open(strKeyEvent,O_RDONLY,0777);
+    if(m_eventFd < 0)
+        printf("[Console]:cannot open event device\n");
 }
 
 void Console::Start()
@@ -375,7 +459,7 @@ Console::~Console()
 {
 }
 
-void Console::UpdateEvent(bool ctrlStop)
+void Console::UpdateEvent(bool ctrlStop,bool stepOver)
 {
     if(ctrlStop)
     {
@@ -391,6 +475,15 @@ void Console::UpdateEvent(bool ctrlStop)
         m_prop = false;
         m_keyMask = 0;
         fflush(stdin);
+        }
+    }
+    if(stepOver)
+    {
+        if(m_recording && !ctrlStop)
+        {
+            AutoCtrl::Action action;
+            m_pCtrller->GetCurrentVelocity(action.x,action.y,action.r);
+            m_record.push_back(action);
         }
     }
 }

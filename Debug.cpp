@@ -68,7 +68,10 @@ void Debug::Output(const char* fmt,...)
     va_start(args, fmt);
     int n = vsprintf(outputBuffer,fmt,args);
     if(enableOutput)
+    {
         outFile.write(outputBuffer,n);
+        outFile.flush();
+    }
     printf("%s",outputBuffer);
     va_end(args);
     mutex_unlock(mutexOutput);

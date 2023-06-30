@@ -41,6 +41,14 @@ void AutoCtrl::UpdateStep()
             case hopToBalance:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::HopToBalance;}break;
             case balanceRestore:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.angle = 0;m_param.hopType = Controller::RestoreAngle;}break;
             case climb:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;m_param.angle = 15.0/180.0*3.1415926;}break;
+            case record:{
+                m_param.hop = false;
+                Action &act = m_actions.front();
+                m_param.x = act.x;
+                m_param.y = act.y;
+                m_param.r = act.r;
+                m_param.angle = 0;
+            }break;
         }
         switch(type)
         {
@@ -55,6 +63,19 @@ void AutoCtrl::UpdateStep()
         }
 
     }
+    mutex_unlock(m_mutex);
+}
+
+void AutoCtrl::AddRecord(float x,float y,float r)
+{
+    mutex_lock(m_mutex);
+    Action act;
+    act.action = record;
+    act.actionCnt = 1;
+    act.x = x;
+    act.y = y;
+    act.r = r;
+    m_actions.push(act);
     mutex_unlock(m_mutex);
 }
 

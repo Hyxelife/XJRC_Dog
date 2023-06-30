@@ -23,11 +23,13 @@ class AutoCtrl
         hop,
         hopToBalance,
         balanceRestore,
+        record,
     };
     struct Action
     {
         int actionCnt;
         ActionType action;
+        float x,y,r;
     };
 public:
 
@@ -47,6 +49,7 @@ public:
     void GetAutoCtrlParam(AutoCtrlParam& param){param = m_param;}
     void AddAction(Action action);
     void AddAction(ActionType type,int count);
+    void AddRecord(float x,float y,float r);
     void AddActions(std::vector<Action> actions);
     void ClearActions();
     bool IsEmpty();

@@ -32,12 +32,12 @@ class Console
     void _console();
     void _outstatus();
     public:
-    Console(const char* strKeyEvent,AutoCtrl* pCtrl);
+    Console(const char* strKeyEvent,AutoCtrl* pCtrl,Controller* pCtrller);
     ~Console();
     void Start();
     void Exit();
 
-    void UpdateEvent(bool ctrlStop);
+    void UpdateEvent(bool ctrlStop,bool stepOver);
 
     void GetConsoleRequest(ConsoleRequest& request){request = m_request;m_request.reqHop = m_request.reqStop = false;}
     void GetConsoleStatus(ConsoleStatus& status){status = m_status;}
@@ -51,6 +51,9 @@ class Console
     ConsoleRequest m_request;
     bool m_prop;
     bool m_threadQuit;
+    bool m_recording;
     std::ifstream m_event;
     AutoCtrl* m_pCtrl;
+    Controller* m_pCtrller;
+    std::vector<AutoCtrl::Action> m_record;
 };

@@ -59,6 +59,7 @@ public:
     void StopMoving();
     void StartMoving();
     PacePlanner& GetPacePlanner();
+    void GetCurrentVelocity(float &x,float &y,float &r);
     protected:
     void _doHop(HopType type);
     void _hopAndBalance();
