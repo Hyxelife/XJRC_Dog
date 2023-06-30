@@ -52,7 +52,7 @@ Controller::Controller(
 	m_smthCtrl = true;
 	m_needHop = m_needStop = false;
 	m_stop = true;
-	m_planner.SetDogOffsetX(9.41f);
+    m_planner.SetDogOffsetX(9.41f);
 }
 
 Controller::~Controller()
@@ -71,7 +71,7 @@ void Controller::Start(float startUpTime)
     m_planner.SetVelocity(0,0,0);
 	LegController::CtrlParam param;
 	m_planner.Update(0, m_pos, m_touchStatus);
-
+    m_planner.DebugShow();
     for (int i = 0; i < 4; ++i)
     {
         param.ctrlMask = LegController::feetPos;
@@ -82,6 +82,7 @@ void Controller::Start(float startUpTime)
         if(enableMap[i])
         #endif // DEBUG_MODE
         {m_pControllers[i]->ApplyCtrlParam(param);}
+        printf("leg[%d],x:%.3f,y:%.3f,z:%.3f\n",m_pos[i].x,m_pos[i].y,m_pos[i].z);
     }
 
 
@@ -306,7 +307,7 @@ PacePlanner& Controller::GetPacePlanner()
 
 struct HopParams
 {
-    float leanTime,hopTime,hopbackTime,restTime;
+    float leanTime,hopTime,hopStopTime,hopbackTime,restTime;
     float start_x,start_y,start_z;
     float hop_y,hop_z;
     float end_y,end_z;
@@ -328,9 +329,9 @@ void Controller::_doHop(HopType type)
 void Controller::_hopForward()
 {
 const HopParams hop = {
-    .leanTime = 1.0f,.hopTime = 0.01f,.hopbackTime = 0.2f,.restTime = 0.5f,
+    .leanTime = 1.0f,.hopTime = 0.015f,.hopStopTime = 0.01f,.hopbackTime = 0.2f,.restTime = 0.5f,
     .start_x = 9.41,.start_y = -4,.start_z = -15,//预备点
-    .hop_y = -15,.hop_z = -38,//蹬腿点
+    .hop_y = -10,.hop_z = -40,//蹬腿点
     .end_y = 5,.end_z = -20,//结束点
     .bz_y1 = -25,.bz_z1 = -27,
     .bz_y2 = -30,.bz_z2 = 1

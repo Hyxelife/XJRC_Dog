@@ -18,7 +18,9 @@ PacePlanner::PacePlanner(float maxStepFwd,float maxStepVrt,float maxRotation,flo
     {
         m_offset[i] = m_lastOffset[i] = {0.0f,0.0f};
         m_legSwinging[i] = false;
+
     }
+    Reset();
 }
 
 float PacePlanner::_cycloidCurve(float time,float height)
@@ -48,6 +50,13 @@ void PacePlanner::Reset()
     m_totalTime = 0;
     for (int i = 0; i < 4; ++i)
         m_offset[i] = m_lastOffset[i] = { 0,0 };
+}
+
+void PacePlanner::DebugShow()
+{
+    printf("[PacePlanner]Debug Information:\n");
+    printf("%.3f,%.3f,%.3f,%.3f,%.3f,%.3f\n",m_dogHeight,m_offsetX,m_climbAngle,m_offset[0].first,m_offset[0].second,m_totalTime);
+    printf("[PacePlanner]End of the section.\n");
 }
 
 void PacePlanner::SetVelocity(float forward,float vertical,float rotation)

@@ -44,7 +44,9 @@ void LegController::_doStartUp()
     LegKinematicsSolver::SolverCache cache;
     FeetMovement move(m_ctrlParam.feetPosX, m_ctrlParam.feetPosY, m_ctrlParam.feetPosZ);
     AxisMovement targetAngle = m_solver.Solve(move, cache);
+    int idx = 0;
     do{
+        //printf("%d\n",idx++);
         end = clock();
         progress = (float)(end - start) / CLOCKS_PER_SEC/m_startUpTime;
         m_motors.PositionCtrl(

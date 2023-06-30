@@ -11,7 +11,7 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize(NULL,"./log/log.txt","./log/pipe.txt");//"./log/pipe.txt"
+    Debug::Initialize(NULL,"./log/log.txt",NULL);//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
@@ -22,10 +22,11 @@ int main()
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
 
- AxisMovement(4.86005,2.16675,4.70933),
- AxisMovement(5.13961,4.08155,2.87622),
- AxisMovement(0.291457,5.10357,5.19254),
-AxisMovement(1.97309,5.90431,0.469016),
+AxisMovement(5.12044,2.0866,4.68134),
+AxisMovement(4.90645,4.16592,2.97708),
+AxisMovement(0.636987,5.3885,5.22628),
+AxisMovement(1.75603,5.78197,0.269981),
+
 
         },
 
@@ -55,6 +56,7 @@ AxisMovement(1.97309,5.90431,0.469016),
     PacePlanner& planner = controller.GetPacePlanner();
     planner.SetCurveHeight(9.0);
     planner.SetDogHeight(30.0f);
+
     planner.SetGait(Gait::Pace(0.5f,0.08f),0);
     controller.EnableVMC(false);
     OUT("[main]:params ready!starting up ...\n");
