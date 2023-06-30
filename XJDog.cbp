@@ -63,6 +63,10 @@
 		<Unit filename="MultiThread.h" />
 		<Unit filename="PacePlanner.cpp" />
 		<Unit filename="PacePlanner.h" />
+		<Unit filename="Record.cpp" />
+		<Unit filename="Record.h">
+			<Option target="&lt;{~None~}&gt;" />
+		</Unit>
 		<Unit filename="Sensor.cpp" />
 		<Unit filename="Sensor.h" />
 		<Unit filename="main.cpp" />
