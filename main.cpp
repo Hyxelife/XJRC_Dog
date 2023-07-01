@@ -11,7 +11,7 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize(NULL,"./log/log.txt",NULL);//"./log/pipe.txt"
+    Debug::Initialize(NULL,"./log/log.txt","./log/pipe.txt");//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
@@ -22,10 +22,12 @@ int main()
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
 
-AxisMovement(5.12044,2.0866,4.68134),
-AxisMovement(4.90645,4.16592,2.97708),
-AxisMovement(0.636987,5.3885,5.22628),
-AxisMovement(1.75603,5.78197,0.269981),
+AxisMovement(5.12696,1.75526,4.80175),
+AxisMovement(4.7891,4.25527,2.8743),
+AxisMovement(0.592885,5.41535,5.15687),
+AxisMovement(1.62794,5.70642,0.28187),
+
+
 
 
         },

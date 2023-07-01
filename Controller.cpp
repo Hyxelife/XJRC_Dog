@@ -307,7 +307,7 @@ PacePlanner& Controller::GetPacePlanner()
 
 struct HopParams
 {
-    float leanTime,hopTime,hopStopTime,hopbackTime,restTime;
+    float leanTime,leanStopTime,hopTime,hopStopTime,hopbackTime,restTime;
     float start_x,start_y,start_z;
     float hop_y,hop_z;
     float end_y,end_z;
@@ -329,8 +329,8 @@ void Controller::_doHop(HopType type)
 void Controller::_hopForward()
 {
 const HopParams hop = {
-    .leanTime = 1.0f,.hopTime = 0.015f,.hopStopTime = 0.01f,.hopbackTime = 0.2f,.restTime = 0.5f,
-    .start_x = 9.41,.start_y = -4,.start_z = -15,//预备点
+    .leanTime = 3.0f,.leanStopTime = 1.0f,.hopTime = 0.05f,.hopStopTime = 0.01f,.hopbackTime = 0.2f,.restTime = 0.5f,
+    .start_x = 9.41,.start_y = -4,.start_z = -10,//预备点
     .hop_y = -10,.hop_z = -40,//蹬腿点
     .end_y = 5,.end_z = -20,//结束点
     .bz_y1 = -25,.bz_z1 = -27,
@@ -352,7 +352,7 @@ const HopParams hop = {
 		if(enableMap[i])
 		mt_params[i] = m_pControllers[i]->GetMotors()->GetMotorParams();
 		if(enableMap[i])
-		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(1,10));
+		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(1,4));
 	}
 	printf("[Controller-Hopping]do lie down\n");
 	//lie down
@@ -375,6 +375,24 @@ const HopParams hop = {
 		stime = etime;
 	}
 
+	printf("[Controller-Hopping]lean stop\n");
+    timer = 0;
+	etime = stime = clock();
+	while(timer < hop.leanStopTime)
+	{
+        float t = timer / hop.leanStopTime;
+		for(int i = 0;i<4;++i)
+		{
+			params[i].feetPosY = hop.start_y;
+			params[i].feetPosZ = hop.start_z;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+        etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
+
 	//hop
 	printf("[Controller-Hopping]do hop\n");
     timer = 0;
@@ -384,8 +402,8 @@ const HopParams hop = {
         float t = timer / hop.hopTime;
 		for(int i = 0;i<4;++i)
 		{
-			params[i].feetPosY = hop.start_y*(1.0f-t)+t*hop.hop_y;
-			params[i].feetPosZ = hop.start_z*(1.0f-t)+t*hop.hop_z;
+			params[i].feetPosY = hop.start_y*(1.0f-t*t)+t*t*hop.hop_y;
+			params[i].feetPosZ = hop.start_z*(1.0f-t*t)+t*t*hop.hop_z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -402,8 +420,8 @@ const HopParams hop = {
 		float t = timer/hop.hopStopTime;
 		for (int i = 0; i < 4; ++i)
 		{
-			params[i].feetPosY = hop.end_y;
-			params[i].feetPosZ = hop.end_z ;
+			params[i].feetPosY = hop.hop_y;
+			params[i].feetPosZ = hop.hop_z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -436,7 +454,7 @@ const HopParams hop = {
 	}
 	//touch down
 	printf("[Controller-Hopping]do touch down\n");
-	
+
 	for(int i = 0;i<4;++i)
 	{
 		if(enableMap[i])

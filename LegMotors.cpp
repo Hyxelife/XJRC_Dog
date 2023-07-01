@@ -39,7 +39,7 @@ void LegMotors::_checkParam(float kp,float kw)
 
 void LegMotors::_checkPos(float shoulderPos,float armPos,float feetPos)
 {
-    const float safetyAngle = DEG(90);
+    const float safetyAngle = DEG(120);
     while(!ms_systemSafe)usleep(10000000);
 
     float deltaAngle = fabsf(m_currentAngle.shoulderHorizontal-shoulderPos);
@@ -122,12 +122,12 @@ m_id(id)
 void LegMotors::PositionCtrl(float shoulderAngle,float armAngle,float armFeetInterAngle)
 {
     //_checkPos(shoulderAngle, armAngle, armFeetInterAngle);
-    ////_checkRange(shoulderAngle, armAngle, armFeetInterAngle);
+    //_checkRange(shoulderAngle, armAngle, armFeetInterAngle);
     //_checkParam(m_params.k_p,m_params.k_w);
+    //OUT("kp:%.3f,kw:%.3f\n",m_params.k_p,m_params.k_w);
+    Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
 
-    //Debug::Record(m_id,shoulderAngle,armAngle,armFeetInterAngle);
-
-    //return;
+    return;
     _checkPos(shoulderAngle, armAngle, armFeetInterAngle);
     _checkRange(shoulderAngle, armAngle, armFeetInterAngle);
     _checkParam(m_params.k_p,m_params.k_w);
