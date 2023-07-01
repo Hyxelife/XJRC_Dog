@@ -342,11 +342,17 @@ const HopParams hop = {
 	clock_t stime = clock(),etime = clock();
 	FeetMovement pos[4];
 	LegController::CtrlParam params[4];
+	LegMotors::MotorParams mt_params[4];
 	for(int i = 0;i<4;++i)
 	{
         if(enableMap[i])
 		pos[i] = m_pControllers[i]->GetCurrentPosition();
 		params[i].ctrlMask = LegController::feetPos;
+
+		if(enableMap[i])
+		mt_params[i] = m_pControllers[i]->GetMotors()->GetMotorParams();
+		if(enableMap[i])
+		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(1,10));
 	}
 	printf("[Controller-Hopping]do lie down\n");
 	//lie down
@@ -390,6 +396,25 @@ const HopParams hop = {
 
 	timer = 0;
 	etime = stime = clock();
+	printf("[Controller-Hopping]do hold on\n");
+	while(timer < hop.hopStopTime)
+	{
+		float t = timer/hop.hopStopTime;
+		for (int i = 0; i < 4; ++i)
+		{
+			params[i].feetPosY = hop.end_y;
+			params[i].feetPosZ = hop.end_z ;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+		etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
+
+
+	timer = 0;
+	etime = stime = clock();
 	printf("[Controller-Hopping]do retrive\n");
 	while(timer < hop.hopbackTime)
 	{
@@ -411,11 +436,9 @@ const HopParams hop = {
 	}
 	//touch down
 	printf("[Controller-Hopping]do touch down\n");
-	LegMotors::MotorParams mt_params[4];
+	
 	for(int i = 0;i<4;++i)
 	{
-        if(enableMap[i])
-		mt_params[i] = m_pControllers[i]->GetMotors()->GetMotorParams();
 		if(enableMap[i])
 		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.1,2));
 	}
@@ -466,7 +489,7 @@ void Controller::_hopAndLean()
     m_planner.Reset();
     m_planner.Update(0,posVec,preserve);
     const HopParams hop = {
-        .leanTime = 1.0f,.hopTime = 0.01f,.hopbackTime = 0.2f,.restTime = 0.5f,
+        .leanTime = 1.0f,.hopTime = 0.01f,.hopStopTime = 0.1f,.hopbackTime = 0.2f,.restTime = 0.5f,
         .start_x = 9.41,.start_y = -5,.start_z = -15,
         .hop_y = -25,.hop_z = -35,
         .end_y = posVec[0].y,.end_z = posVec[0].z+5,
