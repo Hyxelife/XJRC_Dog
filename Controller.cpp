@@ -332,7 +332,7 @@ void Controller::_doHop(HopType type)
 void Controller::_hopForward()
 {
 const HopParams hop = {
-    .leanTime = 3.0f,.leanStopTime = 1.0f,
+    .leanTime = 2.0f,.leanStopTime = 1.0f,
 	.hopBackTime = 0.05f,.hopTime = 0.07f,.hopStopTime = 0.02f,.retriveTime = 0.5f,.restTime = 0.5f,
     .start_x = 9.41,.start_y = -7,.start_z = -10,//预备点
 	.back_y = -10,.back_z = -10,
@@ -599,9 +599,9 @@ void Controller::_hopAndLean()
 	etime = stime = clock();
 
 	printf("[Controller-HopWithAngle]do retrive\n");
-	while(timer < hop.hopbackTime)
+	while(timer < hop.retriveTime)
 	{
-		float t = timer/hop.hopbackTime;
+		float t = timer/hop.retriveTime;
 		for (int i = 0; i < 4; ++i)
 		{
 			params[i].feetPosY = hop.hop_y * (1 - t) * (1 - t) * (1 - t) +
@@ -715,8 +715,9 @@ void Controller::_hopAndSpan()
     m_planner.Reset();
     m_planner.Update(0,posVec,preserve);
     const HopParams hop = {
-        .leanTime = 1.0f,.hopTime = 5.0f,.hopbackTime = 5.0f,.restTime = 1.0f,
+        .leanTime = 1.0f,.hopBackTime = 0.5f,.hopTime = 5.0f,.retriveTime = 5.0f,.restTime = 1.0f,
         .start_x = 9.41,.start_y = -5,.start_z = -15,
+        .back_y = -5,.back_z = -15,
         .hop_y = -10,.hop_z = -31,
         .end_y = posVec[0].y,.end_z = posVec[0].z+5,
         .bz_y1 = -25,.bz_z1 = -27,
@@ -781,9 +782,9 @@ void Controller::_hopAndSpan()
 	etime = stime = clock();
 
 	printf("[Controller-HopWithAngle]do retrive\n");
-	while(timer < hop.hopbackTime)
+	while(timer < hop.retriveTime)
 	{
-		float t = timer/hop.hopbackTime;
+		float t = timer/hop.retriveTime;
 		for (int i = 0; i < 4; ++i)
 		{
 			params[i].feetPosY = hop.hop_y * (1 - t) * (1 - t) * (1 - t) +
