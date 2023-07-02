@@ -17,7 +17,7 @@ public:
 
     void SetVelocity(float forward,float vertical,float rotation);
     void SetDogHeight(float height);
-    void SetDogOffsetX(float offset);
+    void SetDogOffset(float offsetX,float offsetY =0);
     void SetCurveHeight(float height);
     bool Update(float deltaTime,std::vector<FeetMovement>& move,std::vector<bool>& touch);
     void EnableVMC(bool vmcEnable);
@@ -36,7 +36,7 @@ protected:
     float m_dogRadius;
     float m_dogHeight;
     float m_curveHeight;
-    float m_offsetX;
+    float m_offsetX,m_offsetY;
 
     using vec2 = std::pair<float,float>;
     vec2 m_offset[4];

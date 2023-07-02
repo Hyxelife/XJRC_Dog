@@ -38,9 +38,11 @@ void AutoCtrl::UpdateStep()
             case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;}break;
             case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;}break;
             case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::HopForward;}break;
-            case hopToBalance:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::HopAndLean;}break;
-            case balanceRestore:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::Restore;}break;
-            case climb:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;}break;
+            case stepAndSpan:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::StepAndSpan;}break;
+            case stepAndRestore:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::StepToRestore;}break;
+            case clawForward:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::Claw;}break;
+            case clawRight:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::ClawRight;}break;
+            case clawLeft:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::ClawLeft;}break;
             case record:{
                 m_param.hop = false;
                 Action &act = m_actions.front();
@@ -52,8 +54,11 @@ void AutoCtrl::UpdateStep()
         switch(type)
         {
             case hop:
-            case hopToBalance:
-            case balanceRestore:m_actions.pop();break;
+            case stepAndSpan:
+            case stepAndRestore:
+            case clawForward:
+            case clawRight:
+            case clawLeft:m_actions.pop();break;
             default:
             {
                 m_actions.front().actionCnt--;

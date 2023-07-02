@@ -21,9 +21,14 @@ class AutoCtrl
         moveR,
         moveL,
         hop,
-        hopToBalance,
-        balanceRestore,
+        stepAndSpan,
+        stepAndRestore,
         record,
+        autoRotate,
+        startClaw,
+        clawForward,
+        clawRight,
+        clawLeft,
     };
     struct Action
     {

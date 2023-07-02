@@ -54,6 +54,7 @@
 		<Unit filename="Debug.h" />
 		<Unit filename="Gait.cpp" />
 		<Unit filename="Gait.h" />
+		<Unit filename="Hops.cpp" />
 		<Unit filename="Kinematics.cpp" />
 		<Unit filename="Kinematics.h" />
 		<Unit filename="LegController.cpp" />

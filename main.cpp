@@ -11,7 +11,7 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize(NULL,"./log/log.txt",NULL);//"./log/pipe.txt"
+    Debug::Initialize(NULL,"./log/log.txt","./log/pipe.txt");//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     AutoCtrl autoCtrl;
@@ -26,15 +26,6 @@ AxisMovement(4.40675,2.26301,4.9958),
 AxisMovement(5.45792,3.69,2.87622),
 AxisMovement(0.891628,4.69323,5.1933),
 AxisMovement(2.09351,5.96451,0.273816),
-
-
-
-
-
-
-
-
-
 
 
         },
@@ -56,7 +47,7 @@ AxisMovement(2.09351,5.96451,0.273816),
         Controller::CtrlInitParam(0.5,5,14,14,0.3,0.01),
         Controller::MechParam(15+9.41f+9.41f,41)
     );
-    Console con("/dev/input/event11",&autoCtrl,&controller);
+    Console con("/dev/input/event12",&autoCtrl,&controller);
     OUT("[main]:system ready!\n");
 
 
@@ -91,14 +82,8 @@ AxisMovement(2.09351,5.96451,0.273816),
         //continue;
         /////////////end test area//////////////////
 
-    //OUT("loop\n");
         con.GetConsoleRequest(req);
         con.GetConsoleStatus(status);
-        //if(debugCnt++ == 100000000)
-        //{
-        //    printf("out -> mannaul:%d,auto:%d,test:%d,quit:%d\n",status.mannaul,status.auto_,status.test,status.quit);
-        //    debugCnt = 0;
-        //}
         if(status.auto_ || status.test)
         {
             //TODO
@@ -119,10 +104,7 @@ AxisMovement(2.09351,5.96451,0.273816),
                 autoCtrl.UpdateStep();
             stepOver = false;
         }else
-        {
-            if(req.reqHop)printf("hopping...\n");
             stepOver = controller.Update(req.x,req.y,req.r,req.reqHop,req.hopType,true);
-        }
         //printf("update\n");
         if(req.reqStop)
         {
@@ -136,14 +118,11 @@ AxisMovement(2.09351,5.96451,0.273816),
     OUT("[main]:system quitting...\n");
     controller.Exit();
     OUT("[main]:Controller quit!\n");
-    printf("111\n");
     connector.Exit();
     OUT("[Auto]:Connector quit!\n");
-    printf("222\n");
     con.Exit();
     OUT("[Console]:Console quit!\n");
-    printf("333\n");
-    OUT("[main]:system quit!\n");
     Debug::Exit();
+    OUT("[main]:system quit!\n");
     return 0;
 }

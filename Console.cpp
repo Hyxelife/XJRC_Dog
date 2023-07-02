@@ -19,24 +19,27 @@
 #define MASK_RECORD     0x100
 #define MASK_SHOWRECORD 0x200
 
-#define MASK_HOPACTIVATE    0x400
 #define MASK_HOP            0x800
 #define MASK_HOPFRONT       0x1000
-#define MASK_HOPANDLEAN     0x2000
-#define MASK_HOPANDSPAN     0x4000
-#define MASK_RESTORE        0x8000
+#define MASK_STEPANDSPAN    0x2000
+#define MASK_CLAW           0x4000
+#define MASK_CLAWLEFT       0x8000
+#define MASK_CLAWRIGHT      0x10000
+#define MASK_RESTORE        0x20000
+#define MASK_LERPRES        0x40000
 
 
 
 void Console::_updateKeyEvents()
 {
     input_event key_info;
+    unsigned int mask = 0;
     //m_event.read((char*)&key_info,sizeof(key_info));
     if(read(m_eventFd,&key_info,sizeof(input_event)) > 0)
     {
         //printf("event\n");
         if(key_info.type != EV_KEY)return;
-        unsigned int mask = 0;
+
         switch(key_info.code)
         {
             case KEY_A:mask = MASK_A;break;
@@ -48,9 +51,12 @@ void Console::_updateKeyEvents()
             case KEY_SPACE:mask = MASK_HOP|MASK_HOPFRONT;break;
             case KEY_P:mask = MASK_QUIT;break;
             case KEY_F:mask = MASK_STAND;break;
-            case KEY_1:mask = MASK_HOP|MASK_HOPANDSPAN;break;
-            case KEY_6:mask = MASK_HOP|MASK_HOPANDLEAN;break;
+            case KEY_2:mask = MASK_HOP|MASK_CLAW;break;
+            case KEY_1:mask = MASK_HOP|MASK_CLAWLEFT;break;
+            case KEY_3:mask = MASK_HOP|MASK_CLAWRIGHT;break;
+            case KEY_9:mask = MASK_HOP|MASK_STEPANDSPAN;break;
             case KEY_0:mask = MASK_HOP|MASK_RESTORE;break;
+            case KEY_4:mask = MASK_HOP|MASK_LERPRES;break;
             case KEY_U:mask = MASK_RECORD;break;
             case KEY_I:mask = MASK_SHOWRECORD;break;
 
@@ -59,18 +65,7 @@ void Console::_updateKeyEvents()
         if(key_info.value == 0)
             m_keyMask &= ~mask;
         else if(key_info.value == 1 || key_info.value == 2)
-        {
-            //printf("key pressed!\n");
-            mask = mask|m_keyMask;
-            //printf("%d,%d\n",mask&MASK_HOP,m_keyMask & MASK_HOP);
-            if((mask & MASK_HOP) && (m_keyMask & MASK_HOP )== 0)
-            {
-                printf("activate!\n");
-                mask |= MASK_HOPACTIVATE;
-                }
-            else mask &= ~MASK_HOPACTIVATE;
-            m_keyMask = mask;
-        }
+            m_keyMask |= mask;
     }
 }
 
@@ -200,18 +195,27 @@ void Console::_console()
             else if(m_keyMask & MASK_Q) m_request.r = 1;
             else m_request.r = 0;
 
-            if(m_keyMask & MASK_HOPACTIVATE)
+            if(m_keyMask & MASK_HOP)
             {
-                m_request.reqHop = true;
-                if(m_keyMask & MASK_HOPFRONT)
-                    m_request.hopType = Controller::HopForward;
-                else if(m_keyMask & MASK_HOPANDLEAN)
-                    m_request.hopType = Controller::HopAndLean;
-                else if(m_keyMask & MASK_HOPANDSPAN)
-                    m_request.hopType = Controller::HopAndSpan;
-                else if(m_keyMask & MASK_RESTORE)
-                    m_request.hopType = Controller::Restore;
-                else m_request.reqHop = false;
+                if(!m_hopBanned)
+                {
+                    m_request.reqHop = true;
+                    if(m_keyMask & MASK_HOPFRONT)
+                        m_request.hopType = Controller::HopForward;
+                    else if(m_keyMask & MASK_STEPANDSPAN)
+                        m_request.hopType = Controller::StepAndSpan;
+                    else if(m_keyMask & MASK_CLAW)
+                        m_request.hopType = Controller::Claw;
+                    else if(m_keyMask & MASK_CLAWLEFT)
+                        m_request.hopType = Controller::ClawLeft;
+                    else if(m_keyMask & MASK_CLAWRIGHT)
+                        m_request.hopType = Controller::ClawRight;
+                    else if(m_keyMask & MASK_RESTORE)
+                        m_request.hopType = Controller::StepToRestore;
+                    else if(m_keyMask & MASK_LERPRES)
+                        m_request.hopType = Controller::LerpToRestore;
+                    else m_request.reqHop = false;
+                }
             }
 
             if(m_keyMask & MASK_STAND)
@@ -383,9 +387,16 @@ void Console::_console()
                     printf("\t[w/a/s/d] moving control\n");
                     printf("\t[q/e] rotating control\n");
                     printf("\t[Space] hop forward\n");
-                    printf("\t[1] hop and span the legs\n");
-                    printf("\t[6] hop and lean\n");
-                    printf("\t[0] restore posture\n");
+
+                    printf("\t[1] claw left\n");
+                    printf("\t[2] claw forward\n");
+                    printf("\t[3] claw right\n");
+                    printf("\t[4] lerp to restore posture\n");
+
+                    printf("\t[9] span the legs\n");
+                    printf("\t[0] step to restore posture\n");
+
+
                     printf("\t[p] quit control\n");
                     printf("when system is automatically controlling:\n");
                     printf("\t[q] quit\n");
@@ -450,7 +461,7 @@ Console::Console(const char* strKeyEvent,AutoCtrl* pCtrl,Controller* pCtrller)
     m_expStatus.auto_ = m_expStatus.mannaul =m_expStatus.quit= m_expStatus.test= false;
     m_keyMask = 0;
     m_prop = false;
-
+    m_hopBanned = false;
     m_eventFd = open(strKeyEvent,O_RDONLY,0777);
     if(m_eventFd < 0)
         printf("[Console]:cannot open event device\n");
@@ -507,7 +518,8 @@ void Console::UpdateEvent(bool ctrlStop,bool stepOver)
 
 void Console::GetConsoleRequest(Console::ConsoleRequest &request)
 {
+    m_hopBanned = false;
+    if(m_request.reqHop)m_hopBanned = true;
     request = m_request;
     m_request.reqHop = m_request.reqStop = false;
-    m_keyMask &= ~(MASK_HOP|MASK_HOPACTIVATE);
 }

@@ -53,6 +53,6 @@ class Console
     AutoCtrl* m_pCtrl;
     Controller* m_pCtrller;
     std::vector<AutoCtrl::Action> m_record;
-
+    bool m_hopBanned;
     float m_leanAngle;
 };

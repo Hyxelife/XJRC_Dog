@@ -14,6 +14,8 @@ PacePlanner::PacePlanner(float maxStepFwd,float maxStepVrt,float maxRotation,flo
     m_dogDirY = dogLength/m_dogRadius;
     m_dogRadius /= 2.0f;
     m_climbAngle = 0;//
+    m_offsetX = 9.41;
+    m_offsetY = 0;
     for(int i = 0;i<4;++i)
     {
         m_offset[i] = m_lastOffset[i] = {0.0f,0.0f};
@@ -40,9 +42,10 @@ void PacePlanner::SetGait(Gait gait,float transitionTime)
     m_gait = gait;
     m_gaitLerpTime = transitionTime;
 }
-void PacePlanner::SetDogOffsetX(float offset)
+void PacePlanner::SetDogOffset(float offsetX,float offsetY)
 {
-    m_offsetX = offset;
+    m_offsetX = offsetX;
+    m_offsetY = offsetY;
 }
 
 void PacePlanner::Reset()
@@ -113,16 +116,18 @@ float centerY = -5;
     }
     std::vector<float> legTime = m_gait.GetMovingStatus(m_totalTime);
 
-    float sign = 1;
+    float signX = 1,signY = 1;
     if(m_bMVCCtrl)
     {
 
         for(int i = 0;i<4;++i)
         {
-            if (i == LF || i == LB)sign = -1;
-            else sign = 1;
+            if (i == LF || i == LB)signX = -1;
+            else signX = 1;
+            if(i == LF || i == RF)signY = 1;
+            else signY = -1;
             move[i].x = move[i].y=0;
-            move[i].x += sign * m_offsetX;
+            move[i].x += signX * m_offsetX;
             if (legTime[i] <= 1.0f)
             {
                 move[i].z = -m_dogHeight + _cycloidCurve(legTime[i], m_curveHeight);
@@ -139,8 +144,10 @@ float centerY = -5;
 
         for(int i = 0;i<4;++i)
         {
-            if (i == LF || i == LB)sign = -1;
-            else sign = 1;
+            if (i == LF || i == LB)signX = -1;
+            else signX = 1;
+            if(i == LF || i == RF)signY = 1;
+            else signY = -1;
             if(legTime[i]<=1.0f)
             {
                 if(!m_legSwinging[i])
@@ -148,8 +155,8 @@ float centerY = -5;
                     m_legSwinging[i] = true;
                     m_lastOffset[i] = m_offset[i];
                 }
-                move[i].x = sign*m_offsetX+(1.0f-legTime[i])*-m_lastOffset[i].first+legTime[i]*m_offset[i].first;
-                move[i].y = (1.0f-legTime[i])*-m_lastOffset[i].second+legTime[i]*m_offset[i].second+centerY;
+                move[i].x = signX*m_offsetX+(1.0f-legTime[i])*-m_lastOffset[i].first+legTime[i]*m_offset[i].first;
+                move[i].y = signY*m_offsetY+(1.0f-legTime[i])*-m_lastOffset[i].second+legTime[i]*m_offset[i].second+centerY;
                 move[i].z = -m_dogHeight+_cycloidCurve(legTime[i],m_curveHeight);
                 m_legSwinging[i] = true;
                 touch[i] = false;
@@ -159,8 +166,8 @@ float centerY = -5;
                     m_legSwinging[i] = false;
                     m_lastOffset[i] = m_offset[i];
                 }
-                move[i].x = sign * m_offsetX+(2.0f-legTime[i])*m_lastOffset[i].first-(legTime[i]-1.0f)*m_offset[i].first;
-                move[i].y = (2.0f-legTime[i])*m_lastOffset[i].second-(legTime[i]-1.0f)*m_offset[i].second+centerY;
+                move[i].x = signX * m_offsetX+(2.0f-legTime[i])*m_lastOffset[i].first-(legTime[i]-1.0f)*m_offset[i].first;
+                move[i].y = signY*m_offsetY+(2.0f-legTime[i])*m_lastOffset[i].second-(legTime[i]-1.0f)*m_offset[i].second+centerY;
                 move[i].z = -m_dogHeight;
                 touch[i] = true;
             }

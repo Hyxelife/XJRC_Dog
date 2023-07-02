@@ -2,3 +2,7 @@
 [main]:params ready!starting up ...
 [main]:finish start up procedure!
 [main]:start loop
+[main]:system quitting...
+[main]:Controller quit!
+[Auto]:Connector quit!
+[Console]:Console quit!

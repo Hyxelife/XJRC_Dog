@@ -6,14 +6,21 @@
 
 class Controller
 {
+
+    struct Step__tp
+    {
+        float duration;
+        unsigned char procID;
+        FeetMovement targetPos;
+    };
     public:
     enum HopType
     {
         HopForward,
         //TestMotor,
-        HopAndLean,
-        HopAndSpan,
-        Restore,
+        StepAndSpan,
+        LerpToRestore,
+        StepToRestore,
         Claw,
         StepAndClaw,
         ClawLeft,
@@ -52,6 +59,7 @@ public:
         LegController::VMCParam param,
         CtrlInitParam initParam,
         MechParam mcParam);
+
     ~Controller();
 
     void EnableSmoothCtrl(bool enable);
@@ -67,11 +75,17 @@ public:
     void GetCurrentVelocity(float &x,float &y,float &r);
     protected:
     void _doHop(HopType type);
-    void _hopForward();
-    void _hopAndLean();
-    void _hopAndSpan();
-    void _restore();
     void _updateVel(float x,float y,float r,float deltaTime);
+
+    //Hops
+    void _hopForward();
+    void _stepToChange(float offsetX,float offsetY);
+    void _lerpRestore();
+    void _claw(float x,float y);
+    void lerp_(FeetMovement new_[4],float time);
+    void doMovement__tp(Step__tp* animation[4],int stepCount);
+    void ClawFwdOneStep__tp();
+    void VerticalAdjOneStep__tp(double vertical);
 
 protected:
     bool m_bVMCCtrl;
