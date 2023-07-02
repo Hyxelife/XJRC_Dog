@@ -329,9 +329,9 @@ void Controller::_doHop(HopType type)
 void Controller::_hopForward()
 {
 const HopParams hop = {
-    .leanTime = 3.0f,.leanStopTime = 1.0f,.hopTime = 0.05f,.hopStopTime = 0.01f,.hopbackTime = 0.2f,.restTime = 0.5f,
-    .start_x = 9.41,.start_y = -4,.start_z = -10,//预备点
-    .hop_y = -10,.hop_z = -40,//蹬腿点
+    .leanTime = 3.0f,.leanStopTime = 1.0f,.hopTime = 0.07f,.hopStopTime = 0.02f,.hopbackTime = 0.5f,.restTime = 0.5f,
+    .start_x = 9.41,.start_y = -7,.start_z = -10,//预备点
+    .hop_y = -21,.hop_z = -30,//蹬腿点
     .end_y = 5,.end_z = -20,//结束点
     .bz_y1 = -25,.bz_z1 = -27,
     .bz_y2 = -30,.bz_z2 = 1
@@ -352,7 +352,7 @@ const HopParams hop = {
 		if(enableMap[i])
 		mt_params[i] = m_pControllers[i]->GetMotors()->GetMotorParams();
 		if(enableMap[i])
-		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(1,4));
+		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.7,4));
 	}
 	printf("[Controller-Hopping]do lie down\n");
 	//lie down
@@ -434,6 +434,13 @@ const HopParams hop = {
 	timer = 0;
 	etime = stime = clock();
 	printf("[Controller-Hopping]do retrive\n");
+
+
+	for(int i = 0;i<4;++i)
+	{
+		if(enableMap[i])
+		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.1,2));
+	}
 	while(timer < hop.hopbackTime)
 	{
 		float t = timer/hop.hopbackTime;
@@ -455,11 +462,6 @@ const HopParams hop = {
 	//touch down
 	printf("[Controller-Hopping]do touch down\n");
 
-	for(int i = 0;i<4;++i)
-	{
-		if(enableMap[i])
-		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.1,2));
-	}
 
 	for (int i = 0; i < 4; i++)
 	{
