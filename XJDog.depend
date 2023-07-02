@@ -2486,7 +2486,7 @@
 
 1684333613 ad.h"
 
-1688263557 source:/home/robocon/XJDog/LegMotors.cpp
+1688265109 source:/home/robocon/XJDog/LegMotors.cpp
 	<iostream>
 	<fstream>
 	"Debug.h"
@@ -2513,7 +2513,7 @@
 	<iostream>
 	<strings.h>
 
-1688263534 source:/home/robocon/XJDog/Controller.cpp
+1688263665 source:/home/robocon/XJDog/Controller.cpp
 	"Controller.h"
 	<iostream>
 	"Debug.h"
@@ -2524,7 +2524,7 @@
 	"Sensor.h"
 	"LegController.h"
 
-1688263444 source:/home/robocon/XJDog/main.cpp
+1688265187 source:/home/robocon/XJDog/main.cpp
 	<iostream>
 	<stdio.h>
 	"Console.h"
