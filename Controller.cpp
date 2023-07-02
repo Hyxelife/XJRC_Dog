@@ -307,8 +307,9 @@ PacePlanner& Controller::GetPacePlanner()
 
 struct HopParams
 {
-    float leanTime,leanStopTime,hopTime,hopStopTime,hopbackTime,restTime;
+    float leanTime,leanStopTime,hopBackTime,hopTime,hopStopTime,retriveTime,restTime;
     float start_x,start_y,start_z;
+	float back_y,back_z;
     float hop_y,hop_z;
     float end_y,end_z;
     float bz_y1,bz_z1,bz_y2,bz_z2;
@@ -322,15 +323,19 @@ void Controller::_doHop(HopType type)
         //case TestMotor:hop = &hopTest;break;
 		case Restore:_restore();break;
 		case HopAndSpan:_hopAndSpan();break;
-        case HopAndLean:_hopAndLean();return;
+        case HopAndLean:_hopAndLean();break;
+		case StepAndClaw:break;
+		case Claw:break;
     }
 }
 
 void Controller::_hopForward()
 {
 const HopParams hop = {
-    .leanTime = 3.0f,.leanStopTime = 1.0f,.hopTime = 0.07f,.hopStopTime = 0.02f,.hopbackTime = 0.5f,.restTime = 0.5f,
+    .leanTime = 3.0f,.leanStopTime = 1.0f,
+	.hopBackTime = 0.05f,.hopTime = 0.07f,.hopStopTime = 0.02f,.retriveTime = 0.5f,.restTime = 0.5f,
     .start_x = 9.41,.start_y = -7,.start_z = -10,//预备点
+	.back_y = -10,.back_z = -10,
     .hop_y = -21,.hop_z = -30,//蹬腿点
     .end_y = 5,.end_z = -20,//结束点
     .bz_y1 = -25,.bz_z1 = -27,
@@ -393,6 +398,23 @@ const HopParams hop = {
 		stime = etime;
 	}
 
+	printf("[Controller-Hopping] do hop back");
+	timer = 0;
+	etime = stime = clock();
+	while(timer < hop.hopBackTime)
+	{
+        float t = timer / hop.hopBackTime;
+		for(int i = 0;i<4;++i)
+		{
+			params[i].feetPosY = hop.start_y*(1.0f-t*t)+t*t*hop.back_y;
+			params[i].feetPosZ = hop.start_z*(1.0f-t*t)+t*t*hop.back_y;
+			if(enableMap[i])
+			m_pControllers[i]->ApplyCtrlParam(params[i]);
+		}
+        etime = clock();
+		timer += (float)(etime-stime)/(float)CLOCKS_PER_SEC;
+		stime = etime;
+	}
 	//hop
 	printf("[Controller-Hopping]do hop\n");
     timer = 0;
@@ -402,8 +424,8 @@ const HopParams hop = {
         float t = timer / hop.hopTime;
 		for(int i = 0;i<4;++i)
 		{
-			params[i].feetPosY = hop.start_y*(1.0f-t*t)+t*t*hop.hop_y;
-			params[i].feetPosZ = hop.start_z*(1.0f-t*t)+t*t*hop.hop_z;
+			params[i].feetPosY = hop.back_y*(1.0f-t*t)+t*t*hop.hop_y;
+			params[i].feetPosZ = hop.back_y*(1.0f-t*t)+t*t*hop.hop_z;
 			if(enableMap[i])
 			m_pControllers[i]->ApplyCtrlParam(params[i]);
 		}
@@ -441,9 +463,9 @@ const HopParams hop = {
 		if(enableMap[i])
 		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.1,2));
 	}
-	while(timer < hop.hopbackTime)
+	while(timer < hop.retriveTime)
 	{
-		float t = timer/hop.hopbackTime;
+		float t = timer/hop.retriveTime;
 		for (int i = 0; i < 4; ++i)
 		{
 			params[i].feetPosY = hop.hop_y * (1 - t) * (1 - t) * (1 - t) +
@@ -508,14 +530,16 @@ void Controller::_hopAndLean()
     m_planner.SetClimbAngle(15.0/180.0*3.141592653589);
     m_planner.Reset();
     m_planner.Update(0,posVec,preserve);
-    const HopParams hop = {
-        .leanTime = 1.0f,.hopTime = 0.01f,.hopStopTime = 0.1f,.hopbackTime = 0.2f,.restTime = 0.5f,
-        .start_x = 9.41,.start_y = -5,.start_z = -15,
-        .hop_y = -25,.hop_z = -35,
-        .end_y = posVec[0].y,.end_z = posVec[0].z+5,
-        .bz_y1 = -25.3,.bz_z1 = -25.1,
-        .bz_y2 = -23.3,.bz_z2 = -10
-    };
+	const HopParams hop = {
+		.leanTime = 3.0f,.leanStopTime = 1.0f,
+		.hopBackTime = 0.05f,.hopTime = 0.07f,.hopStopTime = 0.02f,.retriveTime = 0.5f,.restTime = 0.5f,
+		.start_x = 9.41,.start_y = -7,.start_z = -10,//预备点
+		.back_y = -10,.back_z = -10,
+		.hop_y = -21,.hop_z = -30,//蹬腿点
+		.end_y = 5,.end_z = -20,//结束点
+		.bz_y1 = -25,.bz_z1 = -27,
+		.bz_y2 = -30,.bz_z2 = 1
+	};
     printf("[Controller-HopWithAngle]:start\n");
 
 

@@ -14,6 +14,10 @@ class Controller
         HopAndLean,
         HopAndSpan,
         Restore,
+        Claw,
+        StepAndClaw,
+        ClawLeft,
+        ClawRight,
 
     };
     struct MechParam
