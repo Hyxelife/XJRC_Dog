@@ -11,11 +11,15 @@ using namespace std;
 //printf
 int main()
 {
-    Debug::Initialize(NULL,"./log/log.txt","./log/pipe.txt");//"./log/pipe.txt"
+    Debug::Initialize(NULL,"./log/log.txt",NULL);//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     IMU imuSensor(0,0,0);
-    imuSensor.OpenIMU("/dev/ttyUSB4");
+    if(!imuSensor.OpenIMU("/dev/ttyUSB4"))
+    {
+        printf("[IMU] System quit due to the fail of IMU\n");
+        exit(-1);
+    }
     AutoCtrl autoCtrl(&imuSensor);
 
 
@@ -23,10 +27,11 @@ int main()
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-AxisMovement(4.75152,2.25956,4.37377),
-AxisMovement(5.09436,4.23725,3.00392),
-AxisMovement(0.397302,0.827968,5.22782),
-AxisMovement(2.49618,5.97947,0.26768),
+AxisMovement(4.90338,2.27835,4.50339),
+AxisMovement(5.24546,3.44801,3.02924),
+AxisMovement(0.238918,0.434501,5.39349),
+AxisMovement(1.8496,5.67958,0.179476),
+
 
         },
 
@@ -47,7 +52,7 @@ AxisMovement(2.49618,5.97947,0.26768),
         Controller::CtrlInitParam(0.5,5,14,14,0.3,0.01),
         Controller::MechParam(15+9.41f+9.41f,41)
     );
-    Console con("/dev/input/event11",&autoCtrl,&controller);
+    Console con("/dev/input/event1",&autoCtrl,&controller);
     OUT("[main]:system ready!\n");
 
 

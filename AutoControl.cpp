@@ -7,6 +7,7 @@ AutoCtrl::AutoCtrl(IMU* pIMU)
     m_startRotate = false;
     m_meetThres = false;
     m_threshold = 1.0;
+    m_kp = 0.1;
     m_pIMU = pIMU;
     mutex_create(m_mutex);
 }
@@ -41,14 +42,24 @@ void AutoCtrl::UpdateStep()
             }
 
             float yaw = m_pIMU->GetIMUData().yaw;
+            float delta = yaw-m_targetAngle;
 
-
+            if(fabsf(delta) >= 180.0)
+            {
+                if(delta > 0)delta -= 180.0;
+                else delta += 180.0;
+            }
+            float p = -m_kp* delta;
+            if(p >= 1)p = 1;
+            if(p<=-1)p = -1;
             m_param.hop = false;
             m_param.x = m_param.y = 0;
+
             if(m_meetThres)
-                m_param.r = yaw-m_targetAngle>0?-1:1;
+                m_param.r = p;
             else
-                m_param.r = yaw-m_targetAngle>0?-0.3:0.3;
+                m_param.r = 0.3*p;
+            printf("[Auto] r=%.3f\n",m_param.r);
             if(fabsf(yaw-m_targetAngle) <= m_threshold)
             {
                 if(m_meetThres)

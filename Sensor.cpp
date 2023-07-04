@@ -234,9 +234,9 @@ IMUReading IMU::GetIMUData()
     return reading;
 }
 
-void IMU::OpenIMU(std::string serialName)
+bool IMU::OpenIMU(std::string serialName)
 {
-    if(m_serialFd != -1)return;
+    if(m_serialFd != -1)return false;
     m_serialFd = open(serialName.c_str(),O_RDONLY);
     termios config;
     tcgetattr(m_serialFd,&config);
@@ -256,13 +256,13 @@ void IMU::OpenIMU(std::string serialName)
     if(m_serialFd < 0)
     {
         cout<<"[IMU]open failed"<<endl;
-        return;
+        return false;
     }
     printf("[IMU]open successfully\n");
     m_sysExit = false;
 
     thread_create(IMU::_recvFunc,this,m_threadDesc);
-
+    return true;
 }
 
 void IMU::CloseIMU()

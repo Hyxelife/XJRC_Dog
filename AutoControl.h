@@ -67,6 +67,7 @@ protected:
     bool m_startRotate;
     float m_threshold;
     float m_targetAngle;
+    float m_kp;
     bool m_meetThres;
     IMU *m_pIMU;
 };

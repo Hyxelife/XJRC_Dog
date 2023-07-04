@@ -22,7 +22,7 @@ public:
     IMUReading GetIMUData();
     IMU(float fwdX,float fwdY,float fwdZ);
     ~IMU();
-    void OpenIMU(std::string serialName);
+    bool OpenIMU(std::string serialName);
     void CloseIMU();
 
 protected:

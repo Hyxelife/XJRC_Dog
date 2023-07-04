@@ -72,7 +72,7 @@ def connect():
             if len(splits) == 4:
                 id = int(splits[0])
                 cnts[id]+=1
-                if cnts[id] == 10:
+                if cnts[id] == 9:
                     status[id] = True
                     loaded[id][0] = float(splits[1])
                     loaded[id][1] = float(splits[2])
