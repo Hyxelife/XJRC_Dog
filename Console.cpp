@@ -324,6 +324,12 @@ void Console::_console()
             printf("command check: (total command %d)\n",actions.size());
             for(int i = 0;i<actions.size();++i)
             {
+                if(actions[i].action == AutoCtrl::autoRotateTo || actions[i].action == AutoCtrl::autoRotateWith)
+                {
+                    if(actions[i].action == AutoCtrl::autoRotateTo)printf("rotate to %.3f deg\n",actions[i].r);
+                    else if(actions[i].action == AutoCtrl::autoRotateWith)printf("rotate with %.3f deg\n",actions[i].r);
+                }else
+                {
                 switch(actions[i].action)
                 {
                     case AutoCtrl::run:printf("run ");break;
@@ -334,8 +340,10 @@ void Console::_console()
                     case AutoCtrl::rotateR:printf("rotateR ");break;
                     case AutoCtrl::turnL:printf("turnL ");break;
                     case AutoCtrl::turnR:printf("turnR ");break;
+
                 }
                 printf("%d times;\n",actions[i].actionCnt);
+                }
             }
             bool ok = false;
             while(true)

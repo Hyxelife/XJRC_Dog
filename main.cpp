@@ -14,7 +14,9 @@ int main()
     Debug::Initialize(NULL,"./log/log.txt","./log/pipe.txt");//"./log/pipe.txt"
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
-    AutoCtrl autoCtrl;
+    IMU imuSensor(0,0,0);
+    imuSensor.OpenIMU("/dev/ttyUSB4");
+    AutoCtrl autoCtrl(&imuSensor);
 
 
     Connector connector(Connector::speed,&autoCtrl);
@@ -120,6 +122,7 @@ AxisMovement(2.49618,5.97947,0.26768),
     OUT("[Auto]:Connector quit!\n");
     con.Exit();
     OUT("[Console]:Console quit!\n");
+    imuSensor.CloseIMU();
     Debug::Exit();
     OUT("[main]:system quit!\n");
     return 0;

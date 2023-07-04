@@ -1,12 +1,13 @@
 #include "AutoControl.h"
 
-AutoCtrl::AutoCtrl()
+AutoCtrl::AutoCtrl(IMU* pIMU)
 {
     m_param.hop = false;
     m_param.r = m_param.x = m_param.y = 0;
     m_startRotate = false;
     m_meetThres = false;
-    m_threshold = 0.1;
+    m_threshold = 1.0;
+    m_pIMU = pIMU;
     mutex_create(m_mutex);
 }
 
@@ -30,32 +31,41 @@ void AutoCtrl::UpdateStep()
     printf("[Auto]:update steps!\n");
         ActionType type = m_actions.front().action;
         if(type == autoRotateTo || type == autoRotateWith)
-        {   
+        {
             if(!m_startRotate)
             {
                 m_startRotate = true;
                 m_meetThres = false;
                 if(type == autoRotateTo)m_targetAngle = m_actions.front().r;
                 else m_targetAngle = m_pIMU->GetIMUData().yaw+m_actions.front().r;
-            }else
+            }
+
+            float yaw = m_pIMU->GetIMUData().yaw;
+
+
+            m_param.hop = false;
+            m_param.x = m_param.y = 0;
+            if(m_meetThres)
+                m_param.r = yaw-m_targetAngle>0?-1:1;
+            else
+                m_param.r = yaw-m_targetAngle>0?-0.3:0.3;
+            if(fabsf(yaw-m_targetAngle) <= m_threshold)
             {
-                float yaw = m_pIMU->GetIMUData().yaw;
-                if(fabsf(yaw-m_targetAngle) <= m_threshold)
+                if(m_meetThres)
                 {
-                    if(m_meetThres)m_actions.pop();
-                    else
-                        m_meetThres = true;
-                }else
+                    printf("[AutoRotate]ok!\n");
+                    m_actions.pop();
+                    m_startRotate = false;
+                    m_meetThres = false;
+                    m_param.r = 0;
+                }
+                else
                 {
-                
-                    m_param.hop = false;
-                    m_param.x = m_param.y = 0;
-                    if(m_meetThres)
-                        m_param.r = yaw-m_targetAngle>0?-1:1;
-                    else
-                        m_param.r = yaw-m_targetAngle>0?-0.3:0.3;
+                    printf("[AutoRotate]first meet\n");
+                    m_meetThres = true;
                 }
             }
+            printf("[AutoRotate]:cur:%.3f,tar:%.3f\n",yaw,m_targetAngle);
 
         }else
         {

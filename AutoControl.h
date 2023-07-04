@@ -49,7 +49,7 @@ public:
     };
 
 public:
-    AutoCtrl();
+    AutoCtrl(IMU* pIMU);
     ~AutoCtrl();
     void UpdateStep();
     void GetAutoCtrlParam(AutoCtrlParam& param){param = m_param;}

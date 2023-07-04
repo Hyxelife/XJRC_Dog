@@ -1,3 +1,4 @@
+
 #include "Sensor.h"
 #include <unistd.h>
 #include "termios.h"
@@ -61,21 +62,21 @@ int IMU::__doParser(uint8_t* parserBuffer,int& parserLen,uint8_t* msgBuffer)
                 return len;
             }else
             {
-                int cc1 = 0,cc2 = 0;
-                for(int i = 0;i<parserPtr+2-headPtr;++i)
-                {
-                    printf("0x%02x",parserBuffer[i+headPtr]);
-                    if(i > 1 && i < parserPtr-headPtr)
-                    {
-                        cc1 = cc1+parserBuffer[i+headPtr];
-                        printf("+");
+                //int cc1 = 0,cc2 = 0;
+                //for(int i = 0;i<parserPtr+2-headPtr;++i)
+                //{
+                    //printf("0x%02x",parserBuffer[i+headPtr]);
+                  //  if(i > 1 && i < parserPtr-headPtr)
+                  // {
+                 //       cc1 = cc1+parserBuffer[i+headPtr];
+                  //      printf("+");
+//
+                 //       cc2 += cc1;
+                 //   }else printf(" ");
+                //}
 
-                        cc2 += cc1;
-                    }else printf(" ");
-                }
-
-                printf("\nCK1=0x%02x,CK2=0x%02x\n",CK1,CK2);
-                printf("\ncc1=0x%02x,cc2=0x%02x\n",cc1%256,cc2%256);
+                //printf("\nCK1=0x%02x,CK2=0x%02x\n",CK1,CK2);
+                //printf("\ncc1=0x%02x,cc2=0x%02x\n",cc1%256,cc2%256);
                 parserPtr -= len+4;
                 headPtr = -1;
             }
@@ -97,24 +98,30 @@ void IMU::__doParserMsg(uint8_t *msgBuffer,int msgLen,IMUReading& reading)
     //cout<<"msg Len:"<<msgLen<<endl;
     //printf("msg:\n");
     //for(int j = 0;j<msgLen;++j)
-    //    printf("0x%02x ",msgBuffer[j]);
+     //  printf("0x%02x ",msgBuffer[j]);
     //printf("\n");
 
     while(i<msgLen)
     {
         uint8_t type = msgBuffer[i++];
+
         switch(type)
         {
             case 0x10://acceleration
             {
+                //cout<<"acc"<<endl;
+                if(msgBuffer[i] != 0x0c)break;
                 i++;
                 int number = 0;
                 uint8_t* ptr = (uint8_t*)(&number);
+                //printf("\1=0x%02x,2=0x%02x,3=0x%02x,4=0x%02x\n",msgBuffer[i],msgBuffer[i+1],msgBuffer[i+2],msgBuffer[i+3]);
                 ptr[0]= msgBuffer[i++];
                 ptr[1]= msgBuffer[i++];
                 ptr[2]= msgBuffer[i++];
                 ptr[3]= msgBuffer[i++];
-                reading.accX = number * 1e-6;
+
+                //if(number<0)number = 0;
+                reading.accX = (float)number * 1e-6;
 
                 ptr[0]= msgBuffer[i++];
                 ptr[1]= msgBuffer[i++];
@@ -130,6 +137,7 @@ void IMU::__doParserMsg(uint8_t *msgBuffer,int msgLen,IMUReading& reading)
             }break;
             case 0x20://angular velocity
             {
+                if(msgBuffer[i] != 0x0c)break;
                 i++;
                 int number = 0;
                 uint8_t* ptr = (uint8_t*)&number;
@@ -153,9 +161,11 @@ void IMU::__doParserMsg(uint8_t *msgBuffer,int msgLen,IMUReading& reading)
             }break;
             case 0x40://angle
             {
+                if(msgBuffer[i] != 0x0c)break;
                 i++;
                 int number = 0;
                 uint8_t* ptr = (uint8_t*)&number;
+                //printf("\1=0x%02x,2=0x%02x,3=0x%02x,4=0x%02x\n",msgBuffer[i],msgBuffer[i+1],msgBuffer[i+2],msgBuffer[i+3]);
                 ptr[0]= msgBuffer[i++];
                 ptr[1]= msgBuffer[i++];
                 ptr[2]= msgBuffer[i++];
@@ -206,7 +216,7 @@ void* IMU::_recvFunc(void* arg)
                 mutex_unlock(pThis->m_mutexDesc);
             }
         }
-        if(rd+parserLen > 20480)cout<<"full"<<endl;
+        //if(rd+parserLen > 20480)cout<<"full"<<endl;
         for(int i = 0;i<rd;++i)
             parserBuffer[parserLen + i] = rxBuffer[i];
         parserLen += rd;
@@ -245,9 +255,10 @@ void IMU::OpenIMU(std::string serialName)
     tcflush(m_serialFd, TCIOFLUSH);
     if(m_serialFd < 0)
     {
-        cout<<"imu open failed"<<endl;
+        cout<<"[IMU]open failed"<<endl;
         return;
     }
+    printf("[IMU]open successfully\n");
     m_sysExit = false;
 
     thread_create(IMU::_recvFunc,this,m_threadDesc);
@@ -264,12 +275,15 @@ if(m_sysExit)return;
     thread_join(m_threadDesc);
 }
 
+#include <string.h>
+
 IMU::IMU(float fwdX, float fwdY, float fwdZ)
 {
 m_serialFd = -1;
     m_sysExit = true;
     m_threadDesc = -1;
     mutex_create(m_mutexDesc);
+    memset(&m_reading,0,sizeof(IMUReading));
 
 }
 
