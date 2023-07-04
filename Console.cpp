@@ -126,16 +126,17 @@ char *__doParse(char* ptr,AutoCtrl::Action &action)
     if(ptr == NULL)return NULL;
     if(*ptr == '\0')return NULL;
     char cmd = *ptr;
-    if(cmd == 'u')
+    if(cmd == 't')
     {
         ptr++;
-        action.x = __parseFloat(ptr);
-        ptr++;
-        action.y = __parseFloat(ptr);
+        action.r = __parseFloat(ptr);
+        action.action = AutoCtrl::autoRotateTo;
+        return ptr+1;
+    }else if(cmd == 'r')
+    {
         ptr++;
         action.r = __parseFloat(ptr);
-        action.actionCnt = 1;
-        action.action = AutoCtrl::record;
+        action.action = AutoCtrl::autoRotateWith;
         return ptr+1;
     }
     ptr = ptr+1;
@@ -413,7 +414,8 @@ void Console::_console()
                     printf("\t[e<num>] rotate clockwise <num> steps\n");
                     printf("\t[z<num>] turn left <num> steps\n");
                     printf("\t[c<num>] turn right <num> steps\n");
-                    printf("\t[u<num>,<num>,<num>] record control,x,y,r\n");
+                    printf("\t[t<num>] rotate to <num> degree\n");
+                    printf("\t[r<num>] rotate with <num> degree\n");
                 }break;
                 case 'm':
                 case 'M':

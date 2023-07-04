@@ -4,6 +4,9 @@ AutoCtrl::AutoCtrl()
 {
     m_param.hop = false;
     m_param.r = m_param.x = m_param.y = 0;
+    m_startRotate = false;
+    m_meetThres = false;
+    m_threshold = 0.1;
     mutex_create(m_mutex);
 }
 
@@ -26,44 +29,75 @@ void AutoCtrl::UpdateStep()
     {
     printf("[Auto]:update steps!\n");
         ActionType type = m_actions.front().action;
-        switch(type)
-        {
-            case run:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;}break;
-            case back:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = -1;}break;
-            case stop:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;}break;
-            case turnR:{m_param.hop = false;m_param.r = -0.5;m_param.x = 0;m_param.y = 0.8;}break;
-            case turnL:{m_param.hop = false;m_param.r = 0.5;m_param.x = 0;m_param.y = 0.8;}break;
-            case rotateR:{m_param.hop = false;m_param.r = -0.5;m_param.x = m_param.y = 0;}break;
-            case rotateL:{m_param.hop = false;m_param.r = 0.5;m_param.x = m_param.y = 0;}break;
-            case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;}break;
-            case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;}break;
-            case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::HopForward;}break;
-            case stepAndSpan:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::StepAndSpan;}break;
-            case stepAndRestore:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::StepToRestore;}break;
-            case clawForward:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::Claw;}break;
-            case clawRight:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::ClawRight;}break;
-            case clawLeft:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::ClawLeft;}break;
-            case record:{
-                m_param.hop = false;
-                Action &act = m_actions.front();
-                m_param.x = act.x;
-                m_param.y = act.y;
-                m_param.r = act.r;
-            }break;
-        }
-        switch(type)
-        {
-            case hop:
-            case stepAndSpan:
-            case stepAndRestore:
-            case clawForward:
-            case clawRight:
-            case clawLeft:m_actions.pop();break;
-            default:
+        if(type == autoRotateTo || type == autoRotateWith)
+        {   
+            if(!m_startRotate)
             {
-                m_actions.front().actionCnt--;
-                if(m_actions.front().actionCnt <= 0)m_actions.pop();
-            }break;
+                m_startRotate = true;
+                m_meetThres = false;
+                if(type == autoRotateTo)m_targetAngle = m_actions.front().r;
+                else m_targetAngle = m_pIMU->GetIMUData().yaw+m_actions.front().r;
+            }else
+            {
+                float yaw = m_pIMU->GetIMUData().yaw;
+                if(fabsf(yaw-m_targetAngle) <= m_threshold)
+                {
+                    if(m_meetThres)m_actions.pop();
+                    else
+                        m_meetThres = true;
+                }else
+                {
+                
+                    m_param.hop = false;
+                    m_param.x = m_param.y = 0;
+                    if(m_meetThres)
+                        m_param.r = yaw-m_targetAngle>0?-1:1;
+                    else
+                        m_param.r = yaw-m_targetAngle>0?-0.3:0.3;
+                }
+            }
+
+        }else
+        {
+            switch(type)
+            {
+                case run:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = 1;}break;
+                case back:{m_param.hop = false;m_param.r = m_param.x = 0;m_param.y = -1;}break;
+                case stop:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;}break;
+                case turnR:{m_param.hop = false;m_param.r = -0.5;m_param.x = 0;m_param.y = 0.8;}break;
+                case turnL:{m_param.hop = false;m_param.r = 0.5;m_param.x = 0;m_param.y = 0.8;}break;
+                case rotateR:{m_param.hop = false;m_param.r = -0.5;m_param.x = m_param.y = 0;}break;
+                case rotateL:{m_param.hop = false;m_param.r = 0.5;m_param.x = m_param.y = 0;}break;
+                case moveR:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = 1;}break;
+                case moveL:{m_param.hop = false;m_param.r = m_param.y = 0;m_param.x = -1;}break;
+                case hop:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::HopForward;}break;
+                case stepAndSpan:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::StepAndSpan;}break;
+                case stepAndRestore:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::StepToRestore;}break;
+                case clawForward:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::Claw;}break;
+                case clawRight:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::ClawRight;}break;
+                case clawLeft:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::ClawLeft;}break;
+                case record:{
+                    m_param.hop = false;
+                    Action &act = m_actions.front();
+                    m_param.x = act.x;
+                    m_param.y = act.y;
+                    m_param.r = act.r;
+                }break;
+            }
+            switch(type)
+            {
+                case hop:
+                case stepAndSpan:
+                case stepAndRestore:
+                case clawForward:
+                case clawRight:
+                case clawLeft:m_actions.pop();break;
+                default:
+                {
+                    m_actions.front().actionCnt--;
+                    if(m_actions.front().actionCnt <= 0)m_actions.pop();
+                }break;
+            }
         }
 
     }

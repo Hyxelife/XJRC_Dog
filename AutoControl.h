@@ -3,6 +3,7 @@
 #include "MultiThread.h"
 #include <queue>
 #include "Controller.h"
+#include "Sensor.h"
 
 
 class AutoCtrl
@@ -24,7 +25,8 @@ class AutoCtrl
         stepAndSpan,
         stepAndRestore,
         record,
-        autoRotate,
+        autoRotateTo,
+        autoRotateWith,
         ClawDown,
         clawForward,
         clawRight,
@@ -61,4 +63,9 @@ protected:
     MUTEX m_mutex;
     AutoCtrlParam m_param;
     std::queue<Action> m_actions;
+    bool m_startRotate;
+    float m_threshold;
+    float m_targetAngle;
+    bool m_meetThres;
+    IMU *m_pIMU;
 };
