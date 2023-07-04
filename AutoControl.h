@@ -18,6 +18,7 @@ class AutoCtrl
         turnL,
         rotateR,
         rotateL,
+        hold,
         climb,
         moveR,
         moveL,

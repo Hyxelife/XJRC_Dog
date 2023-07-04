@@ -28,6 +28,7 @@ class Console
 
     void _console();
     void _outstatus();
+    void _outRecord();
     public:
     Console(const char* strKeyEvent,AutoCtrl* pCtrl,Controller* pCtrller);
     ~Console();

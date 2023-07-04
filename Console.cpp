@@ -154,6 +154,7 @@ char *__doParse(char* ptr,AutoCtrl::Action &action)
         case 'e':action.action = AutoCtrl::rotateR;break;
         case 'z':action.action = AutoCtrl::turnL;break;
         case 'c':action.action = AutoCtrl::turnR;break;
+        case 'f':action.action = AutoCtrl::hold;break;
     }
     return ptr;
 }
@@ -161,6 +162,49 @@ char *__doParse(char* ptr,AutoCtrl::Action &action)
 char buffer[1024];
 
 
+void Console::_outRecord()
+{
+    AutoCtrl::Action lastAction;
+    int cnt = 0;
+    for(int i = 0;i<m_record.size();++i)
+    {
+        if(cnt == 0)
+        {
+            cnt = 1;
+            lastAction = m_record[i];
+        }else if(lastAction.x == m_record[i].x &&
+                lastAction.y == m_record[i].y &&
+                lastAction.r == m_record[i].r)
+                cnt++;
+        else
+        {
+            int code;
+            code |= lastAction.x == 1?0x1:0;
+            code |= lastAction.x == -1?0x2:0;
+            code |= lastAction.y == 1?0x4:0;
+            code |= lastAction.y == -1?0x8:0;
+            code |= lastAction.r == 1?0x10:0;
+            code |= lastAction.r == -1?0x20:0;
+            char cmd = 0;
+            switch(code)
+            {
+                case 0:cmd = 'f';break;
+                case 0x1:cmd = 'd';break;
+                case 0x2:cmd = 'a';break;
+                case 0x4:cmd = 'w';break;
+                case 0x8:cmd = 's';break;
+                case 0x10:cmd = 'q';break;
+                case 0x20:cmd = 'e';break;
+                case 0x14:cmd = 'z';break;
+                case 0x24:cmd = 'c';break;
+            }
+            if(cmd != 0)
+                printf("%c%d;\n",cmd,cnt);
+            cnt = 1;
+            lastAction = m_record[i];
+        }
+    }
+}
 
 void Console::_console()
 {
@@ -244,10 +288,12 @@ void Console::_console()
                 if(m_recording)
                 {
                     m_recording = false;
-                    OUT("\n[Console]: showing the record result:\n");
+                    _outRecord();
+                    /*OUT("\n[Console]: showing the record result:\n");
                     for(int i = 0;i<m_record.size();++i)
                         OUT("pCtrl->AddRecord(%.3f,%.3f,%.3f);\n",m_record[i].x,m_record[i].y,m_record[i].r);
                     OUT("\n[Console]: end of the record\n");
+                    */
                     m_request.reqStop = true;
                 }
             }
@@ -519,7 +565,10 @@ void Console::UpdateEvent(bool ctrlStop,bool stepOver)
         if(m_recording && !ctrlStop)
         {
             AutoCtrl::Action action;
-            m_pCtrller->GetCurrentVelocity(action.x,action.y,action.r);
+            action.x = m_request.x;
+            action.y = m_request.y;
+            action.r = m_request.r;
+            //m_pCtrller->GetCurrentVelocity(action.x,action.y,action.r);
             m_record.push_back(action);
         }
 

@@ -102,6 +102,7 @@ protected:
     float m_outVel[3];
     float m_hisVel[3];
     float m_incVel[3];
+    float m_expVel[3];
     float m_kp,m_kw;
     bool m_needStop;
     bool m_needHop;

@@ -86,6 +86,7 @@ void AutoCtrl::UpdateStep()
                 case clawForward:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::Claw;}break;
                 case clawRight:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::ClawRight;}break;
                 case clawLeft:{m_param.hop = true;m_param.r = m_param.x = m_param.y = 0;m_param.hopType = Controller::ClawLeft;}break;
+                case hold:{m_param.hop = false;m_param.r = m_param.x = m_param.y = 0;}break;
                 case record:{
                     m_param.hop = false;
                     Action &act = m_actions.front();
