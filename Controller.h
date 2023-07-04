@@ -22,6 +22,7 @@ class Controller
         LerpToRestore,
         StepToRestore,
         Claw,
+            ClawDown,
         StepAndClaw,
         ClawLeft,
         ClawRight,
@@ -81,10 +82,9 @@ public:
     void _hopForward();
     void _stepToChange(float offsetX,float offsetY);
     void _lerpRestore();
-    void _claw(float x,float y);
     void lerp_(FeetMovement new_[4],float time);
     void doMovement__tp(Step__tp* animation[4],int stepCount);
-    void ClawFwdOneStep__tp();
+    void ClawFwdOneStep__tp(double stepSteep);
     void VerticalAdjOneStep__tp(double vertical);
 
 protected:
@@ -110,4 +110,6 @@ protected:
     bool m_moving;
     float m_movingThres;
     float m_leanAngle;
+    bool m_clawDown;
+    bool m_startClaw;
 };

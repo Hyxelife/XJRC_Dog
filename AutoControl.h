@@ -25,7 +25,7 @@ class AutoCtrl
         stepAndRestore,
         record,
         autoRotate,
-        startClaw,
+        ClawDown,
         clawForward,
         clawRight,
         clawLeft,

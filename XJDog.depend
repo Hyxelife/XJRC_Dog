@@ -2486,7 +2486,7 @@
 
 1684333613 ad.h"
 
-1688268796 source:/home/robocon/XJDog/LegMotors.cpp
+1688306659 source:/home/robocon/XJDog/LegMotors.cpp
 	<iostream>
 	<fstream>
 	"Debug.h"
@@ -2513,18 +2513,18 @@
 	<iostream>
 	<strings.h>
 
-1688279351 source:/home/robocon/XJDog/Controller.cpp
+1688306117 source:/home/robocon/XJDog/Controller.cpp
 	"Controller.h"
 	<iostream>
 	"Debug.h"
 
-1688281220 /home/robocon/XJDog/Controller.h
+1688456356 /home/robocon/XJDog/Controller.h
 	"eigen-3.4.0/Eigen/Eigen"
 	"PacePlanner.h"
 	"Sensor.h"
 	"LegController.h"
 
-1688270153 source:/home/robocon/XJDog/main.cpp
+1688456399 source:/home/robocon/XJDog/main.cpp
 	<iostream>
 	<stdio.h>
 	"Console.h"
@@ -5079,7 +5079,7 @@
 	<fcntl.h>
 	<unistd.h>
 
-1688268068 /home/robocon/XJDog/AutoControl.h
+1688305954 /home/robocon/XJDog/AutoControl.h
 	"fcntl.h"
 	"MultiThread.h"
 	<queue>
@@ -5112,7 +5112,7 @@
 1688097784 /home/robocon/XJDog/Record.h
 	"AutoControl.h"
 
-1688282803 source:/home/robocon/XJDog/Hops.cpp
+1688306419 source:/home/robocon/XJDog/Hops.cpp
 	"Controller.h"
 	"Kinematics.h"
 

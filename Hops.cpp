@@ -20,9 +20,26 @@ void Controller::_doHop(HopType type)
         //case TestMotor:hop = &hopTest;break;
 		case LerpToRestore:_lerpRestore();break;
 		case StepToRestore:_stepToChange(9.41,0);break;
-		case StepAndSpan:_stepToChange(9.41+5,5);break;
+		case StepAndSpan:_stepToChange(9.41+10,10);break;
 		case StepAndClaw:break;
-		case Claw:ClawFwdOneStep__tp();break;
+		case Claw:
+		{
+            if(!m_startClaw)
+            {
+                m_startClaw = true;
+                m_clawDown = false;
+            }
+            if(m_clawDown)
+                ClawFwdOneStep__tp(-15.0/180.0*3.141592653589);
+            else
+                ClawFwdOneStep__tp(-15.0/180.0*3.141592653589);
+
+		}break;
+		case ClawDown:
+		{
+            m_clawDown = true;
+		}break;
+
 		case ClawLeft:VerticalAdjOneStep__tp(-1);break;
 		case ClawRight:VerticalAdjOneStep__tp(1);break;
     }
@@ -32,10 +49,10 @@ void Controller::_hopForward()
 {
     const HopParams hop = {
         .leanTime = 2.0f,.leanStopTime = 1.0f,
-        .hopBackTime = 0.05f,.hopTime = 0.1f,.hopStopTime = 0.05f,.retriveTime = 0.5f,.restTime = 0.5f,
+        .hopBackTime = 0.09f,.hopTime = 0.11f,.hopStopTime = 0.05f,.retriveTime = 0.3f,.restTime = 0.5f,
         .start_x = 9.41,.start_y = -7,.start_z = -10,//预备点
-        .back_y = -10,.back_z = -10,
-        .hop_y = -21,.hop_z = -35,//蹬腿点
+        .back_y = -12,.back_z = -10,
+        .hop_y = -21,.hop_z = -37,//蹬腿点
         .end_y = 5,.end_z = -20,//结束点
         .bz_y1 = -25,.bz_z1 = -27,
         .bz_y2 = -30,.bz_z2 = 1
@@ -52,7 +69,7 @@ void Controller::_hopForward()
 		pos[i] = m_pControllers[i]->GetCurrentPosition();
 		params[i].ctrlMask = LegController::feetPos;
 		mt_params[i] = m_pControllers[i]->GetMotors()->GetMotorParams();
-		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.7,4));
+		m_pControllers[i]->GetMotors()->SetMotorParams(LegMotors::MotorParams(0.8,2.5));
 	}
 	printf("[Controller-Hopping]do lie down\n");
 	//lie down
@@ -433,24 +450,24 @@ void Controller::doMovement__tp(struct Step__tp* animation[4],int stepCount)//in
 }
 
 
-#define CLAW_OFFXR			4.5
-#define CLAW_OFFXL			4.5
+#define CLAW_OFFXR			8.5
+#define CLAW_OFFXL			8.5
 //#define CLAW_OFFZ			5
 
 #define CLAW_FUL_OFFZ		30
 #define CLAW_STEP_DURAT		0.8f
 #define CLAW_LEAN_DURAT	    0.8f
-#define CLAW_OFFY			20
+#define CLAW_OFFY			-7
 
 
-#define CLAWSTEP_YLEN		12
+#define CLAWSTEP_YLEN		20
 #define CLAWSTEP_XLEN		5.0
 
 #define MIN(a,b)		a<b?a:b
 #define MAX(a,b)		a>b?a:b
 
 
-void Controller::ClawFwdOneStep__tp()
+void Controller::ClawFwdOneStep__tp(double angle)
 {
     printf("start claw\n");
 	struct Step__tp LF_[6];
@@ -586,9 +603,13 @@ void Controller::ClawFwdOneStep__tp()
             else
                 animation[i][j].targetPos.x -= 9.41;
 
-			//if(i == RF || i == LF)
-			//	animation[i][j].targetPos.y += CLAW_OFFY;
-
+			if(animation[i][j].targetPos.y >= 0 && (i == 0 ||i == 1))
+				animation[i][j].targetPos.z += sin(angle) * animation[i][j].targetPos.y;
+			else
+				animation[i][j].targetPos.z += sin(angle/3.0) * animation[i][j].targetPos.y;
+			animation[i][j].targetPos.y += CLAW_FUL_OFFZ * tan(angle);
+			if(i == 0 || i == 2)
+				animation[i][j].targetPos.y += CLAW_OFFY;
 		}
 	}
 	doMovement__tp(animation, 6);

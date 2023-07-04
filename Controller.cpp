@@ -53,6 +53,8 @@ Controller::Controller(
 	m_needHop = m_needStop = false;
 	m_stop = true;
     m_planner.SetDogOffset(9.41f);
+    m_clawDown = false;
+    m_startClaw = false;
 }
 
 Controller::~Controller()

@@ -21,12 +21,10 @@ int main()
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-
-AxisMovement(4.40675,2.26301,4.9958),
-AxisMovement(5.45792,3.69,2.87622),
-AxisMovement(0.891628,4.69323,5.1933),
-AxisMovement(2.09351,5.96451,0.273816),
-
+AxisMovement(4.75152,2.25956,4.37377),
+AxisMovement(5.09436,4.23725,3.00392),
+AxisMovement(0.397302,0.827968,5.22782),
+AxisMovement(2.49618,5.97947,0.26768),
 
         },
 
@@ -47,7 +45,7 @@ AxisMovement(2.09351,5.96451,0.273816),
         Controller::CtrlInitParam(0.5,5,14,14,0.3,0.01),
         Controller::MechParam(15+9.41f+9.41f,41)
     );
-    Console con("/dev/input/event12",&autoCtrl,&controller);
+    Console con("/dev/input/event11",&autoCtrl,&controller);
     OUT("[main]:system ready!\n");
 
 
