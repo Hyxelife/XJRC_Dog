@@ -1,4 +1,4 @@
-#include <iostream>
+ #include <iostream>
 #include <stdio.h>
 #include "Console.h"
 #include "Controller.h"
@@ -15,11 +15,7 @@ int main()
     LegStructure::RegisterStructure(LegStructure(9.41f, 25.0f, 25.0f));
     LegMotors::SetMotorScalar(9.1f);
     IMU imuSensor(0,0,0);
-    if(!imuSensor.OpenIMU("/dev/ttyUSB4"))
-    {
-        printf("[IMU] System quit due to the fail of IMU\n");
-        exit(-1);
-    }
+    imuSensor.OpenIMU("/dev/ttyUSB4");
     AutoCtrl autoCtrl(&imuSensor);
 
 
@@ -27,10 +23,24 @@ int main()
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-AxisMovement(4.90338,2.27835,4.50339),
-AxisMovement(5.24546,3.44801,3.02924),
-AxisMovement(0.238918,0.434501,5.39349),
-AxisMovement(1.8496,5.67958,0.179476),
+AxisMovement(4.95554,2.21392,4.72084),
+AxisMovement(5.39617,3.49212,3.04956),
+AxisMovement(0.1975,0.575628,4.9889),
+AxisMovement(1.79476,0.0755487,0.271899),
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         },
@@ -49,10 +59,10 @@ AxisMovement(1.8496,5.67958,0.179476),
             {1,-1,-1},
         },
         LegController::VMCParam(),
-        Controller::CtrlInitParam(0.5,5,14,14,0.3,0.01),
+        Controller::CtrlInitParam(0.5,5,14,12,0.3,0.01),
         Controller::MechParam(15+9.41f+9.41f,41)
     );
-    Console con("/dev/input/event1",&autoCtrl,&controller);
+    Console con("/dev/input/event11",&autoCtrl,&controller);
     OUT("[main]:system ready!\n");
 
 
@@ -128,6 +138,11 @@ AxisMovement(1.8496,5.67958,0.179476),
     con.Exit();
     OUT("[Console]:Console quit!\n");
     imuSensor.CloseIMU();
+    Debug::Exit();
+    OUT("[main]:system quit!\n");
+    return 0;
+}
+MU();
     Debug::Exit();
     OUT("[main]:system quit!\n");
     return 0;

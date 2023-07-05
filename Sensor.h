@@ -22,7 +22,7 @@ public:
     IMUReading GetIMUData();
     IMU(float fwdX,float fwdY,float fwdZ);
     ~IMU();
-    bool OpenIMU(std::string serialName);
+    void OpenIMU(std::string serialName);
     void CloseIMU();
 
 protected:
@@ -32,4 +32,6 @@ protected:
     int m_serialFd;
     bool m_sysExit;
     //Eigen::Matrix3f m_transform;
+};
+/Eigen::Matrix3f m_transform;
 };

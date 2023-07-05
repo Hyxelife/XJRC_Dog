@@ -11,3 +11,5 @@
 2. Calibrate motors
 3. Make sure the safety code is added (in `./LegMotors.cpp`)
 4. Run
+p`)
+4. Run

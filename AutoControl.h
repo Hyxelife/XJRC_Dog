@@ -32,6 +32,7 @@ class AutoCtrl
         clawForward,
         clawRight,
         clawLeft,
+        straight,
     };
     struct Action
     {
@@ -60,14 +61,18 @@ public:
     void AddActions(std::vector<Action> actions);
     void ClearActions();
     bool IsEmpty();
+    IMU* GetIMUSensor(){return m_pIMU;}
 protected:
     MUTEX m_mutex;
     AutoCtrlParam m_param;
     std::queue<Action> m_actions;
     bool m_startRotate;
+    bool m_startAuto;
     float m_threshold;
     float m_targetAngle;
     float m_kp;
+    float m_kp_str;
     bool m_meetThres;
+    float m_lastDiff;
     IMU *m_pIMU;
 };

@@ -95,3 +95,8 @@ void Connector::Exit()
     thread_join(m_threadDesc);
     thread_destroy(m_threadDesc);
 }
+n;
+    m_sysQuit = true;
+    thread_join(m_threadDesc);
+    thread_destroy(m_threadDesc);
+}

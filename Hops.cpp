@@ -737,3 +737,50 @@ void Controller::VerticalAdjOneStep__tp(double vertical)
 
 
 
+.targetPos.x = -ADJ_OFFX;
+	RF_[3].targetPos.y = 0;
+
+
+	LR_[4].duration = CLAW_STEP_DURAT;
+	LR_[4].procID = CUBEPACE;
+	LR_[4].targetPos.x = -ADJ_OFFX;
+	LR_[4].targetPos.y = 0;
+
+	LF_[5].duration = CLAW_STEP_DURAT;
+	LF_[5].procID = CUBEPACE;
+	LF_[5].targetPos.x = -ADJ_OFFX;
+	LF_[5].targetPos.y = 0;
+
+	for (int i = 0; i < 4; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+		            if(i == RF | i == RB)
+                animation[i][j].targetPos.x += 9.41;
+            else
+                animation[i][j].targetPos.x -= 9.41;
+
+			animation[i][j].targetPos.y = old[i].y;
+			animation[i][j].targetPos.z = old[i].z;
+		}
+	}
+
+	doMovement__tp(animation, 6);
+
+    printf("end claw\n");
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

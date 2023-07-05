@@ -6,3 +6,4 @@ void Record(AutoCtrl* pCtrl);
 
 
 #endif // RECORD_H_INCLUDED
+CLUDED

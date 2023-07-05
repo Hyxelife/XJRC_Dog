@@ -234,9 +234,9 @@ IMUReading IMU::GetIMUData()
     return reading;
 }
 
-bool IMU::OpenIMU(std::string serialName)
+void IMU::OpenIMU(std::string serialName)
 {
-    if(m_serialFd != -1)return false;
+    if(m_serialFd != -1)return;
     m_serialFd = open(serialName.c_str(),O_RDONLY);
     termios config;
     tcgetattr(m_serialFd,&config);
@@ -256,13 +256,13 @@ bool IMU::OpenIMU(std::string serialName)
     if(m_serialFd < 0)
     {
         cout<<"[IMU]open failed"<<endl;
-        return false;
+        return;
     }
     printf("[IMU]open successfully\n");
     m_sysExit = false;
 
     thread_create(IMU::_recvFunc,this,m_threadDesc);
-    return true;
+
 }
 
 void IMU::CloseIMU()
@@ -273,6 +273,25 @@ if(m_sysExit)return;
         close(m_serialFd);
 
     thread_join(m_threadDesc);
+}
+
+#include <string.h>
+
+IMU::IMU(float fwdX, float fwdY, float fwdZ)
+{
+m_serialFd = -1;
+    m_sysExit = true;
+    m_threadDesc = -1;
+    mutex_create(m_mutexDesc);
+    memset(&m_reading,0,sizeof(IMUReading));
+
+}
+
+IMU::~IMU()
+{
+    if(m_serialFd != -1)
+        close(m_serialFd);
+    cout<<"closed"<<endl;
 }
 
 #include <string.h>

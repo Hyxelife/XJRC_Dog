@@ -57,3 +57,7 @@ class Console
     bool m_hopBanned;
     float m_leanAngle;
 };
+ecord;
+    bool m_hopBanned;
+    float m_leanAngle;
+};

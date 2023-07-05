@@ -118,7 +118,7 @@ float __parseFloat(char* &ptr)
     }
     result = num;
     for(int i = 0;i<dot;++i)result /= 10.0;
-    return result;
+    return result*sign;
 }
 
 char *__doParse(char* ptr,AutoCtrl::Action &action)
@@ -138,6 +138,14 @@ char *__doParse(char* ptr,AutoCtrl::Action &action)
         action.r = __parseFloat(ptr);
         action.action = AutoCtrl::autoRotateWith;
         return ptr+1;
+    }else if(cmd == 'l')
+    {
+        ptr++;
+        action.action = AutoCtrl::straight;
+        action.actionCnt = __parseNum(ptr);
+        ptr++;
+        action.r = __parseFloat(ptr);
+        return ptr+;
     }
     ptr = ptr+1;
     int num = __parseNum(ptr);
@@ -155,6 +163,8 @@ char *__doParse(char* ptr,AutoCtrl::Action &action)
         case 'z':action.action = AutoCtrl::turnL;break;
         case 'c':action.action = AutoCtrl::turnR;break;
         case 'f':action.action = AutoCtrl::hold;break;
+        case 'l':action.action = AutoCtrl::straight;break;
+        default:ptr = -1;
     }
     return ptr;
 }
@@ -366,14 +376,22 @@ void Console::_console()
             {
                 actions.push_back(action);
                 ptr = __doParse(ptr,action);
+                if(ptr == -1)
+                {
+                    actions.clear();
+                    printf("unknow command!\n");
+                    continue;
+                }
             }
             printf("command check: (total command %d)\n",actions.size());
             for(int i = 0;i<actions.size();++i)
             {
-                if(actions[i].action == AutoCtrl::autoRotateTo || actions[i].action == AutoCtrl::autoRotateWith)
+                if(actions[i].action == AutoCtrl::autoRotateTo || actions[i].action == AutoCtrl::autoRotateWith
+                ||actions[i].action == AutoCtrl::straight)
                 {
                     if(actions[i].action == AutoCtrl::autoRotateTo)printf("rotate to %.3f deg\n",actions[i].r);
                     else if(actions[i].action == AutoCtrl::autoRotateWith)printf("rotate with %.3f deg\n",actions[i].r);
+                    else if(actions[i].action == AutoCtrl::straight)printf("move %d cnt,with %.3f deg\n",actions[i].actionCnt,actions[i].r);
                 }else
                 {
                 switch(actions[i].action)
@@ -386,6 +404,7 @@ void Console::_console()
                     case AutoCtrl::rotateR:printf("rotateR ");break;
                     case AutoCtrl::turnL:printf("turnL ");break;
                     case AutoCtrl::turnR:printf("turnR ");break;
+                    case AutoCtrl::hold:printf("hold ");break;
 
                 }
                 printf("%d times;\n",actions[i].actionCnt);
@@ -434,6 +453,7 @@ void Console::_console()
                     printf("*           help page            *\n");
                     printf("**********************************\n");
                     printf("[h/H] help page\n");
+                    printf("[g/G] gyro value\n");
                     printf("[m/M] mannually control\n");
                     printf("[v/V] automatically control\n");
                     printf("[t/T] automatic test\n");
@@ -470,6 +490,11 @@ void Console::_console()
                     printf("\t[c<num>] turn right <num> steps\n");
                     printf("\t[t<num>] rotate to <num> degree\n");
                     printf("\t[r<num>] rotate with <num> degree\n");
+                }break;
+                case 'g':
+                case 'G':
+                {
+                    printf("[Gyro Value]=%.3f\n",m_pCtrl->GetIMUSensor()->GetIMUData().yaw);
                 }break;
                 case 'm':
                 case 'M':
@@ -569,6 +594,20 @@ void Console::UpdateEvent(bool ctrlStop,bool stepOver)
             action.y = m_request.y;
             action.r = m_request.r;
             //m_pCtrller->GetCurrentVelocity(action.x,action.y,action.r);
+            m_record.push_back(action);
+        }
+
+    }
+}
+
+void Console::GetConsoleRequest(Console::ConsoleRequest &request)
+{
+    m_hopBanned = false;
+    if(m_request.reqHop)m_hopBanned = true;
+    request = m_request;
+    m_request.reqHop = m_request.reqStop = false;
+}
+ller->GetCurrentVelocity(action.x,action.y,action.r);
             m_record.push_back(action);
         }
 

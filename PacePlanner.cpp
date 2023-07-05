@@ -65,7 +65,7 @@ void PacePlanner::DebugShow()
 void PacePlanner::SetVelocity(float forward,float vertical,float rotation)
 {
     if(m_bMVCCtrl)return;
-    forward += 0.09;
+    forward += 0.10;
     rotation += 0.01;
     vertical += 0.01;
 

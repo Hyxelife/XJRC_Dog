@@ -92,3 +92,8 @@ void Debug::Record(int leg,float shoulder,float arm,float feet)
         printf("%d,%f,%f,%f\n",leg,shoulder,arm,feet);
     usleep(10000);
 }
+);
+    }else
+        printf("%d,%f,%f,%f\n",leg,shoulder,arm,feet);
+    usleep(10000);
+}

@@ -10,4 +10,5 @@ namespace Debug
     void Exit();
     void Record(int leg,float shoulder,float arm,float feet);
     void Output(const char* fmt,...);
+};mt,...);
 };
