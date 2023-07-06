@@ -33,5 +33,5 @@ protected:
     bool m_sysExit;
     //Eigen::Matrix3f m_transform;
 };
-/Eigen::Matrix3f m_transform;
+igen::Matrix3f m_transform;
 };

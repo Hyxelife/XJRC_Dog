@@ -88,12 +88,12 @@ void Debug::Record(int leg,float shoulder,float arm,float feet)
         if(enableRealtime)
             write(rcQueue,recordBuffer,n);
         mutex_unlock(mutexRecord);
-    }else
+    }else{
         printf("%d,%f,%f,%f\n",leg,shoulder,arm,feet);
-    usleep(10000);
+        usleep(10000);
+    }
 }
-);
-    }else
+
         printf("%d,%f,%f,%f\n",leg,shoulder,arm,feet);
     usleep(10000);
 }

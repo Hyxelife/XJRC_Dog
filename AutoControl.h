@@ -33,6 +33,7 @@ class AutoCtrl
         clawRight,
         clawLeft,
         straight,
+        sback
     };
     struct Action
     {

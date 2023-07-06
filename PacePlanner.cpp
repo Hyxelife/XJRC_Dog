@@ -66,7 +66,7 @@ void PacePlanner::SetVelocity(float forward,float vertical,float rotation)
 {
     if(m_bMVCCtrl)return;
     forward += 0.10;
-    rotation += 0.01;
+    //rotation += 0.1;
     vertical += 0.01;
 
     if (forward > 1.0f)forward = 1.0f;

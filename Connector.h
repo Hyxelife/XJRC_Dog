@@ -30,7 +30,8 @@ protected:
     AutoCtrl* m_pCtrl;
     int m_state;
 
-};m_pCtrl;
+};
+Ctrl;
     int m_state;
 
 };

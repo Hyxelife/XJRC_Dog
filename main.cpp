@@ -23,10 +23,15 @@ int main()
     Controller controller(
         {"/dev/ttyUSB0","/dev/ttyUSB1","/dev/ttyUSB2","/dev/ttyUSB3"},
         {
-AxisMovement(4.95554,2.21392,4.72084),
-AxisMovement(5.39617,3.49212,3.04956),
-AxisMovement(0.1975,0.575628,4.9889),
-AxisMovement(1.79476,0.0755487,0.271899),
+ AxisMovement(4.22076,1.34415,4.0735),
+ AxisMovement(5.9369,2.872,3.05071),
+ AxisMovement(0.0529225,4.32507,5.34133),
+ AxisMovement(1.92937,1.81547,0.271899),
+
+
+
+
+
 
 
 
@@ -142,7 +147,7 @@ AxisMovement(1.79476,0.0755487,0.271899),
     OUT("[main]:system quit!\n");
     return 0;
 }
-MU();
+
     Debug::Exit();
     OUT("[main]:system quit!\n");
     return 0;

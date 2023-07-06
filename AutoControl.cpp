@@ -7,9 +7,9 @@ AutoCtrl::AutoCtrl(IMU* pIMU)
     m_startAuto = false;
     m_startRotate = false;
     m_meetThres = false;
-    m_threshold = 2.0;
+    m_threshold = 3.5;
     m_kp = 0.05;
-    m_kp_str = 0.05;
+    m_kp_str = 0.02;
     m_lastDiff = 0;
     m_pIMU = pIMU;
     mutex_create(m_mutex);
@@ -38,12 +38,6 @@ void AutoCtrl::UpdateStep()
         {
             float yaw = m_pIMU->GetIMUData().yaw;
             float delta = yaw-m_targetAngle;
-
-            if(fabsf(delta) >= 180.0)
-            {
-                if(delta > 0)delta -= 360.0;
-                else delta += 360.0;
-            }
             if(!m_startRotate)
             {
                 m_startRotate = true;
@@ -52,8 +46,15 @@ void AutoCtrl::UpdateStep()
                 else m_targetAngle = m_pIMU->GetIMUData().yaw+m_actions.front().r;
                 if(m_targetAngle>180)m_targetAngle-= 360.0;
                 else if(m_targetAngle < -180)m_targetAngle+=360.0;
-                m_lastDiff = delta;
+                m_lastDiff = delta = yaw-m_targetAngle;
+            }else
+            {
+                if(delta*m_lastDiff <= 0)m_meetThres = true;
             }
+            printf("[AutoRotate]:cur:%.3f,tar:%.3f,delta:%.3f\n",yaw,m_targetAngle,delta);
+
+            if(delta > 180.0)delta -= 360.0;
+            else if(delta < -180.0)delta += 360.0;
 
 
             float p = -m_kp* delta;
@@ -63,12 +64,10 @@ void AutoCtrl::UpdateStep()
             m_param.x = m_param.y = 0;
 
             if(!m_meetThres)
-                m_param.r = p;
+                m_param.r = 0.7*p;
             else
                 m_param.r = 0.3*p;
             printf("[Auto] r=%.3f,delta=%.3f,over=%d\n",m_param.r,delta,m_meetThres);
-            if(delta * m_lastDiff <= 0)
-                m_meetThres = true;
 
             if(fabsf(yaw-m_targetAngle) <= m_threshold)
             {
@@ -82,7 +81,6 @@ void AutoCtrl::UpdateStep()
                 }
             }
             m_lastDiff = delta;
-            printf("[AutoRotate]:cur:%.3f,tar:%.3f\n",yaw,m_targetAngle);
 
         }else
         {
@@ -111,6 +109,7 @@ void AutoCtrl::UpdateStep()
                     m_param.y = act.y;
                     m_param.r = act.r;
                 }break;
+                case sback:
                 case straight:
                 {
                     Action &act = m_actions.front();
@@ -120,17 +119,29 @@ void AutoCtrl::UpdateStep()
                         {
                             if(act.r > 0)act.r -= 360.0;
                             else act.r += 360.0;
-                        }  
+                        }
                         m_startAuto = true;
                         m_targetAngle = act.r;
                     }
-                    float delta = m_pIMU->GetIMUData.yaw-m_targetAngle;
-                    if(delta > 180.0)act.r -= 360.0;
+                    float delta = m_pIMU->GetIMUData().yaw-m_targetAngle;
+
+                    if(delta > 180.0)delta -= 360.0;
                     else if(delta < -180.0)delta += 360.0;
                     m_param.hop = false;
-                    m_param.x = 0;
-                    m_param.y = 1;
-                    m_param.r = m_kp_str*delta;
+                    m_param.x = delta*0.5*m_kp_str;
+                    m_param.r = -m_kp_str*delta;
+
+                    if(m_param.x >= 0.2)m_param.x = 0.2;
+                    else if(m_param.x <= -0.2)m_param.x = -0.2;
+
+                    if(m_param.r >= 0.3)m_param.r = 0.3;
+                    else if(m_param.r <= -0.3)m_param.r = -0.3;
+
+                    if(act.action == straight)
+                        {m_param.x-=0.05;m_param.y = 1;}
+                    else {m_param.y = -1;m_param.x *= -1;m_param.r *= -1;}
+
+                    printf("[AutoStrainght] delta = %.3f,r = %.3f,x=%.3f\n",delta,m_param.r,m_param.x);
                 }
             }
             switch(type)

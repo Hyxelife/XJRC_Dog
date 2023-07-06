@@ -145,7 +145,15 @@ char *__doParse(char* ptr,AutoCtrl::Action &action)
         action.actionCnt = __parseNum(ptr);
         ptr++;
         action.r = __parseFloat(ptr);
-        return ptr+;
+        return ptr+1;
+    }else if(cmd == 'k')
+    {
+        ptr++;
+        action.action = AutoCtrl::sback;
+        action.actionCnt = __parseNum(ptr);
+        ptr++;
+        action.r = __parseFloat(ptr);
+        return ptr+1;
     }
     ptr = ptr+1;
     int num = __parseNum(ptr);
@@ -164,7 +172,8 @@ char *__doParse(char* ptr,AutoCtrl::Action &action)
         case 'c':action.action = AutoCtrl::turnR;break;
         case 'f':action.action = AutoCtrl::hold;break;
         case 'l':action.action = AutoCtrl::straight;break;
-        default:ptr = -1;
+        case 'k':action.action = AutoCtrl::sback;break;
+        default:ptr = (char*)-1;break;
     }
     return ptr;
 }
@@ -376,7 +385,7 @@ void Console::_console()
             {
                 actions.push_back(action);
                 ptr = __doParse(ptr,action);
-                if(ptr == -1)
+                if(ptr == (char*)-1)
                 {
                     actions.clear();
                     printf("unknow command!\n");
@@ -392,6 +401,7 @@ void Console::_console()
                     if(actions[i].action == AutoCtrl::autoRotateTo)printf("rotate to %.3f deg\n",actions[i].r);
                     else if(actions[i].action == AutoCtrl::autoRotateWith)printf("rotate with %.3f deg\n",actions[i].r);
                     else if(actions[i].action == AutoCtrl::straight)printf("move %d cnt,with %.3f deg\n",actions[i].actionCnt,actions[i].r);
+                    else if(actions[i].action == AutoCtrl::sback)printf("back %d cnt,%.3f deg\n",actions[i].actionCnt,actions[i].r);
                 }else
                 {
                 switch(actions[i].action)
@@ -594,20 +604,6 @@ void Console::UpdateEvent(bool ctrlStop,bool stepOver)
             action.y = m_request.y;
             action.r = m_request.r;
             //m_pCtrller->GetCurrentVelocity(action.x,action.y,action.r);
-            m_record.push_back(action);
-        }
-
-    }
-}
-
-void Console::GetConsoleRequest(Console::ConsoleRequest &request)
-{
-    m_hopBanned = false;
-    if(m_request.reqHop)m_hopBanned = true;
-    request = m_request;
-    m_request.reqHop = m_request.reqStop = false;
-}
-ller->GetCurrentVelocity(action.x,action.y,action.r);
             m_record.push_back(action);
         }
 
